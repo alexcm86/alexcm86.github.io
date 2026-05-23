@@ -329,7 +329,13 @@ function toggleLang(){
   save();
   render();
 }
-const CATS=['업무','개인','운동','학습','재무'];
+const CATS_KO=['업무','개인','운동','학습','재무'];
+const CATS_EN=['Work','Personal','Exercise','Study','Finance'];
+const CAT_KO_TO_EN={업무:'Work',개인:'Personal',운동:'Exercise',학습:'Study',재무:'Finance'};
+const CAT_EN_TO_KO={Work:'업무',Personal:'개인',Exercise:'운동',Study:'학습',Finance:'재무'};
+function getCats(){return lang==='ko'?CATS_KO:CATS_EN;}
+function catToKo(c){return CAT_EN_TO_KO[c]||c;}
+function catDisplay(c){return lang==='ko'?c:(CAT_KO_TO_EN[c]||c);}
 const CAT_COLOR={업무:'#4f46e5',개인:'#7c3aed',운동:'#059669',학습:'#d97706',재무:'#e11d48'};
 const CAT_BG={업무:'#eef2ff',개인:'#f5f3ff',운동:'#ecfdf5',학습:'#fffbeb',재무:'#fff1f2'};
 
@@ -442,7 +448,7 @@ function scaleDown(){if(cardScale>SCALE_MIN){cardScale=Math.max(SCALE_MIN,cardSc
 function renderDash(){
   const total=goals.length, done=goals.filter(g=>g.current>=g.target).length;
   const avg=total?Math.round(goals.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/total):0;
-  const byCat=CATS.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
+  const byCat=CATS_KO.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
   const sorted=[...goals].sort((a,b)=>pctVal(b)-pctVal(a));
   const urgent=goals.filter(g=>g.deadline).map(g=>{
     const diff=Math.ceil((new Date(g.deadline)-new Date())/86400000);
@@ -472,7 +478,7 @@ function renderDash(){
       <div style="flex:1">${byCat.map(({cat,items})=>{
         const a=Math.round(items.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/items.length);
         return `<div class="cat-row" style="margin-bottom:6px">
-          <div class="cat-label" style="color:${CAT_COLOR[cat]}">${cat}</div>
+          <div class="cat-label" style="color:${CAT_COLOR[cat]}">${catDisplay(cat)}</div>
           <div class="bar-track"><div class="bar-fill" style="width:${a}%;background:${CAT_COLOR[cat]}"></div></div>
           <div class="bar-pct">${a}%</div>
         </div>`;
@@ -524,7 +530,7 @@ function drawDonut(){
   const canvas=document.getElementById('donut-chart');
   if(!canvas) return;
   const ctx=canvas.getContext('2d');
-  const byCat=CATS.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
+  const byCat=CATS_KO.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
   if(!byCat.length) return;
   const W=canvas.width, H=canvas.height;
   const cx=W/2, cy=H/2, outerR=38, innerR=24;
@@ -551,8 +557,8 @@ function drawDonut(){
 
 /* ── List ── */
 function renderList(){
-  const used=['전체',...CATS.filter(c=>goals.some(g=>g.category===c))];
-  let h=`<div id="filter-bar">`+used.map(c=>`<button class="filter-chip${c===filter?' active':''}" onclick="setFilter('${c}')">${c}</button>`).join('')+`</div>`;
+  const used=['전체',...CATS_KO.filter(c=>goals.some(g=>g.category===c))];
+  let h=`<div id="filter-bar">`+used.map(c=>`<button class="filter-chip${c===filter?' active':''}" onclick="setFilter('${c}')">${c==='전체'?(lang==='ko'?'전체':'All'):catDisplay(c)}</button>`).join('')+`</div>`;
   h+=`<div id="ctrl-bar">
     <button class="size-btn" onclick="scaleDown()">−</button>
     <span id="size-label">${cardScale}%</span>
@@ -813,7 +819,7 @@ function openAddModal(){
     <label>${t("nameLbl")}</label>
     <input id="f-title" placeholder="${t('namePh')}" oninput="chkSave()">
     <div class="row2">
-      <div><label>${t("catLbl")}</label><select id="f-cat">${CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div><label>${t("catLbl")}</label><select id="f-cat">${getCats().map((c,i)=>`<option value="${CATS_KO[i]}">${c}</option>`).join('')}</select></div>
       <div><label>${t("unitLbl")}</label><input id="f-unit" placeholder="${t('unitPh')}"></div>
     </div>
     <div class="row2">
@@ -850,7 +856,7 @@ function openEdit(id){
     <label>목표 이름 *</label>
     <input id="f-title" value="${esc(g.title)}" oninput="chkSave()">
     <div class="row2">
-      <div><label>${t("catLbl")}</label><select id="f-cat">${CATS.map(c=>`<option${c===g.category?' selected':''}>${c}</option>`).join('')}</select></div>
+      <div><label>${t("catLbl")}</label><select id="f-cat">${getCats().map((c,i)=>`<option value="${CATS_KO[i]}"${CATS_KO[i]===g.category?' selected':''}>${c}</option>`).join('')}</select></div>
       <div><label>단위</label><input id="f-unit" value="${esc(g.unit||"")}"></div>
     </div>
     <div class="row2">
