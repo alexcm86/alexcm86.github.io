@@ -1,5 +1,5 @@
 // v5 - 캐시 완전 초기화
-const CACHE = 'kpi-v5';
+const CACHE = 'kpi-v6';
 const FILES = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', e => {
