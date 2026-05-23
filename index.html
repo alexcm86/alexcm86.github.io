@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="해냄">
 <meta name="theme-color" content="#1e2960">
-<link rel="manifest" href="/alexkpi/manifest.json">
-<link rel="apple-touch-icon" href="/alexkpi/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>해냄</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -222,16 +222,17 @@
     transition:all .15s;
   ">KO</button>
   <button onclick="exportData()" title="백업" style="
-    padding:3px 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    padding:0 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
     background:transparent;color:#fff;font-size:13px;
     font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
+    height:28px;display:flex;align-items:center;justify-content:center;
   ">⬇</button>
   <label title="복원" style="
-    padding:3px 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    padding:0 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
     background:transparent;color:#fff;font-size:13px;
     cursor:pointer;flex-shrink:0;transition:all .15s;
+    height:28px;display:flex;align-items:center;justify-content:center;
   ">⬆<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
-  <a href="/privacy.html" style="font-size:10px;color:rgba(255,255,255,0.45);text-decoration:none;flex-shrink:0" title="개인정보처리방침">🔒</a>
 </div>
 
 <div id="main"></div>
@@ -316,6 +317,9 @@ function toggleLang(){
   lang=lang==='ko'?'en':'ko';
   const btn=document.getElementById('lang-btn');
   if(btn) btn.textContent=lang==='ko'?'KO':'EN';
+  // 로고 변경
+  const logo=document.querySelector('.logo');
+  if(logo) logo.innerHTML=lang==='ko'?'해<span>냄</span>':'DID <span>IT</span>';
   // 탭 텍스트 업데이트
   const tl=T[lang];
   document.getElementById('tab-list').textContent=tl.list;
@@ -447,8 +451,8 @@ function renderDash(){
 
   let h=`<div id="dash-main">`;
   h+=`<div class="stat-grid">
-    <div class="stat-card"><div class="stat-val">${total}<sub>개</sub></div><div class="stat-label">${t("totalKpi")}</div></div>
-    <div class="stat-card"><div class="stat-val">${done}<sub>개</sub></div><div class="stat-label">${t("doneCnt")}</div></div>
+    <div class="stat-card"><div class="stat-val">${total}${lang==='ko'?'<sub>개</sub>':''}</div><div class="stat-label">${t("totalKpi")}</div></div>
+    <div class="stat-card"><div class="stat-val">${done}${lang==='ko'?'<sub>개</sub>':''}</div><div class="stat-label">${t("doneCnt")}</div></div>
     <div class="stat-card"><div class="stat-val">${avg}<sub>%</sub></div><div class="stat-label">${t("avgPct")}</div></div>
   </div>`;
 
