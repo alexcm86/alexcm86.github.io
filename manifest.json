@@ -2,20 +2,20 @@
   "name": "해냄 - 목표 달성 기록",
   "short_name": "해냄",
   "description": "목표를 세우고 꾸준히 달성해가는 기록 앱",
-  "start_url": "/start_url": "/alexkpi/"
+  "start_url": "/alexkpi/",
   "display": "standalone",
   "background_color": "#1e2960",
   "theme_color": "#1e2960",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/alexkpi/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/alexkpi/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
