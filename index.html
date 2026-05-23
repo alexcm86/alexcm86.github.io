@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="해냄">
+<meta name="theme-color" content="#1e2960">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>해냄</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#4f46e5;--blue-bg:#eef2ff;
+    --purple:#7c3aed;--purple-bg:#f5f3ff;
+    --green:#059669;--green-bg:#ecfdf5;
+    --amber:#d97706;--amber-bg:#fffbeb;
+    --red:#dc2626;--red-bg:#fef2f2;
+    --indigo:#1e2960;
+    --bg:#f0f2f8;--card:#ffffff;--border:#e4e7f0;
+    --text:#1a1d2e;--sub:#6b7280;--mute:#c4c9d8;
+    --shadow:0 2px 12px rgba(79,70,229,0.08);
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
+
+  /* Header */
+  #header{background:linear-gradient(135deg,#1e2960 0%,#2d3a8c 100%);border-bottom:none;padding:0 16px;display:flex;align-items:center;height:calc(56px + var(--safe-top));padding-top:var(--safe-top);gap:10px;flex-shrink:0;z-index:10;box-shadow:0 2px 16px rgba(30,41,96,0.25);}
+  .logo{font-weight:800;font-size:15px;letter-spacing:-0.3px;flex:1;color:#ffffff}
+  .logo span{color:#93c5fd}
+  #tabs{display:flex;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;gap:2px}
+  .tab-btn{padding:4px 9px;border-radius:7px;border:none;font-size:11px;font-weight:600;font-family:inherit;background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;transition:all .15s}
+  .tab-btn.active{background:#ffffff;color:#1e2960;box-shadow:0 1px 6px rgba(0,0,0,0.15);font-weight:700}
+
+  /* Main */
+  #main{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:10px 14px 0;}
+
+  /* FAB */
+  #fab{position:fixed;bottom:calc(76px + var(--safe-bottom));right:18px;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;font-size:22px;box-shadow:0 4px 18px rgba(79,70,229,0.5);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,opacity .3s;z-index:20;opacity:1;}
+  #fab.hidden{opacity:0;pointer-events:none}
+  #fab:active{transform:scale(0.9)}
+
+  /* Filter */
+  #filter-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0;margin-bottom:6px;}
+  #filter-bar::-webkit-scrollbar{display:none}
+  .filter-chip{padding:5px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--card);color:#555;font-weight:600;font-size:11px;font-family:inherit;white-space:nowrap;cursor:pointer;flex-shrink:0}
+  .filter-chip.active{background:#eef2ff;border-color:#4f46e5;color:#4f46e5}
+
+  /* Controls */
+  #ctrl-bar{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-shrink:0;}
+  .size-btn{width:28px;height:28px;border-radius:8px;border:1.5px solid #c7d2fe;background:#eef2ff;color:#4f46e5;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .size-btn:active{background:#f0f0f0}
+  #size-label{font-size:11px;color:var(--sub);font-weight:600;min-width:30px;text-align:center}
+  .sort-btn{margin-left:auto;padding:4px 11px;border-radius:99px;border:1.5px solid #c7d2fe;background:#eef2ff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;color:#4f46e5;}
+
+  /* Card list */
+  #card-list{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(130px + var(--safe-bottom));}
+  #card-list::-webkit-scrollbar{display:none}
+
+  /* KPI Card */
+  .kpi-card{background:var(--card);border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;margin-bottom:8px;overflow:hidden;}
+  .kpi-card.done{border-color:#4f46e5;box-shadow:0 2px 12px rgba(79,70,229,0.15);}
+  .card-inner{display:flex;align-items:center;padding:0 10px;height:var(--card-h,72px);gap:9px;}
+
+  /* Ring - CSS로 크기 제어, viewBox 고정 */
+  .ring-wrap{position:relative;flex-shrink:0;width:var(--ring,40px);height:var(--ring,40px);}
+  .ring-svg{width:100%;height:100%;transform:rotate(-90deg);}
+  .ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;line-height:1;}
+
+  .kpi-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:1px;padding-right:2px}
+  .kpi-chips{display:flex;align-items:center;gap:4px}
+  .cat-chip{font-weight:600;border-radius:4px;padding:1px 5px}
+  .kpi-title{font-weight:700;line-height:1.3;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpi-nums{color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpi-bar-wrap{height:3px;background:#f0f0f0;border-radius:99px;overflow:hidden;margin-top:2px}
+  .kpi-bar-fill{height:100%;border-radius:99px}
+  .done-badge{position:absolute;top:6px;right:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-weight:700;border-radius:5px;padding:1px 5px;line-height:1.4;}
+  .drag-handle{flex-shrink:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px;cursor:grab;opacity:0.3}
+  .drag-handle div{width:14px;height:2px;background:#666;border-radius:2px}
+
+  /* Actions */
+  .kpi-actions{display:flex;border-top:1px solid #f5f5f5;}
+  .act-btn{flex:1;border:none;background:transparent;font-family:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+  .act-btn+.act-btn{border-left:1px solid #f5f5f5}
+  .act-log{color:#fff;flex:2}.act-hist{color:#555}.act-edit{color:#555}.act-del{color:var(--red)}
+
+  /* Dashboard */
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+  .stat-card{background:var(--card);border-radius:14px;padding:14px 8px;text-align:center;box-shadow:var(--shadow)}
+  .stat-val{font-size:24px;font-weight:800;letter-spacing:-1px;display:flex;align-items:baseline;justify-content:center;gap:1px}
+  .stat-val sub{font-size:12px;font-weight:500;color:var(--sub);vertical-align:baseline}
+  .stat-label{font-size:12px;color:var(--sub);margin-top:2px}
+  .section-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px;border:1px solid var(--border)}
+  .section-title{font-size:13px;font-weight:700;color:#888;letter-spacing:0.3px;margin-bottom:12px}
+  .cat-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .cat-label{font-size:13px;font-weight:700;width:36px}
+  .bar-track{flex:1;height:8px;background:#f0f0f0;border-radius:99px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:99px}
+  .bar-pct{font-size:13px;font-weight:700;color:#555;width:36px;text-align:right}
+  #dash-main{flex:1;overflow-y:auto;padding-bottom:calc(130px + var(--safe-bottom))}
+
+  /* Top KPI list in dash */
+  .top-kpi-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f5f5f5}
+  .top-kpi-row:last-child{border-bottom:none}
+  .top-rank{font-size:16px;font-weight:800;color:var(--mute);width:22px;text-align:center}
+  .top-title{flex:1;font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-pct{font-size:15px;font-weight:800}
+
+  .empty{text-align:center;padding:60px 0;color:var(--mute)}
+  .empty-icon{font-size:36px;margin-bottom:10px}
+  .empty-text{font-size:13px}
+
+  /* Modal */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:100;display:flex;align-items:center;justify-content:center;padding:0 14px;animation:fadeIn .18s ease}
+  .overlay.bottom{align-items:flex-end;padding:0}
+  .modal-box{background:var(--card);border-radius:20px;width:100%;max-width:440px;padding:24px 20px 20px;box-shadow:0 24px 60px rgba(30,41,96,0.2);animation:slideUp .2s ease;max-height:88vh;overflow-y:auto}
+  .modal-box.sheet{border-radius:18px 18px 0 0;max-width:100%;padding-bottom:calc(20px + var(--safe-bottom));animation:slideUpB .2s ease;max-height:75vh}
+  .modal-title{font-weight:800;font-size:16px;margin-bottom:18px}
+  label{display:block;font-size:12px;font-weight:600;color:#666;margin-bottom:4px;margin-top:12px}
+  label:first-of-type{margin-top:0}
+  input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-family:inherit;color:var(--text);background:#fafafa;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--blue);background:#fff}
+  textarea{resize:none;height:66px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+  .btn-cancel{padding:9px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--card);color:#555;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+  .btn-save{padding:9px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
+  .btn-save:disabled{opacity:0.35;cursor:default}
+  .btn-full{width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:14px}
+  .hist-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #f3f3f3}
+  .hist-date{font-size:11px;color:var(--mute);min-width:78px}
+  .hist-val{font-weight:700;font-size:12px;border-radius:6px;padding:2px 8px}
+  .hist-note{font-size:12px;color:#666;flex:1}
+
+
+  /* ── 달성이력 ── */
+  #history-main{flex:1;overflow-y:auto;padding-bottom:calc(130px + var(--safe-bottom));}
+  .year-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 0 8px;cursor:pointer;user-select:none;
+  }
+  .year-title{font-size:16px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
+  .year-summary{font-size:11px;color:var(--sub);font-weight:600}
+  .year-arrow{font-size:12px;color:var(--mute);transition:transform .2s}
+  .year-arrow.open{transform:rotate(90deg)}
+  .year-stats{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+    margin-bottom:8px;
+  }
+  .ys-card{background:var(--card);border-radius:12px;padding:10px 6px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border)}
+  .ys-val{font-size:22px;font-weight:800;letter-spacing:-0.5px;display:flex;align-items:baseline;justify-content:center;gap:1px}
+  .ys-val sub{font-size:12px;font-weight:500;color:var(--sub);vertical-align:baseline}
+  .ys-label{font-size:12px;color:var(--sub);margin-top:2px}
+  .hist-goal-card{
+    background:var(--card);border-radius:14px;border:1px solid var(--border);
+    margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow);
+  }
+  .hist-goal-header{
+    display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;
+  }
+  .hist-goal-info{flex:1;min-width:0}
+  .hist-goal-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hist-goal-sub{font-size:12px;color:var(--sub)}
+  .hist-goal-pct{font-size:16px;font-weight:800;flex-shrink:0}
+  .hist-goal-arrow{font-size:11px;color:var(--mute);transition:transform .2s;flex-shrink:0}
+  .hist-goal-arrow.open{transform:rotate(90deg)}
+  .hist-goal-body{display:none;border-top:1px solid #f5f5f5;padding:10px 14px}
+  .hist-goal-body.open{display:block}
+  .hist-log-row{
+    display:flex;align-items:center;gap:8px;
+    padding:6px 0;border-bottom:1px solid #f9f9f9;font-size:12px;
+  }
+  .hist-log-row:last-child{border-bottom:none}
+  .hist-log-date{color:var(--mute);min-width:84px;font-size:12px}
+  .hist-log-val{font-weight:700;border-radius:5px;padding:2px 9px;font-size:12px}
+  .hist-log-note{color:#666;flex:1;font-size:12px}
+  .hist-mini-bar{height:4px;background:#f0f0f0;border-radius:99px;overflow:hidden;margin:8px 0 4px}
+  .hist-mini-fill{height:100%;border-radius:99px}
+  .year-block{margin-bottom:4px}
+  .year-content{display:none}
+  .year-content.open{display:block}
+  .no-history{text-align:center;padding:50px 0;color:var(--mute)}
+
+  /* 연도 탭 선택 */
+  #year-tab-bar{
+    display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0;
+  }
+  #year-tab-bar::-webkit-scrollbar{display:none}
+  .year-chip{
+    padding:5px 14px;border-radius:99px;border:1.5px solid var(--border);
+    background:var(--card);color:#555;font-weight:700;font-size:12px;
+    font-family:inherit;white-space:nowrap;cursor:pointer;flex-shrink:0;
+  }
+  .year-chip.active{background:#eef2ff;border-color:#4f46e5;color:#4f46e5}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideUpB{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+</style>
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8440663734931688" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<div id="header">
+  <div class="logo">해<span>냄</span></div>
+  <div id="tabs">
+    <button class="tab-btn active" id="tab-list" onclick="switchView('list')">목록</button>
+    <button class="tab-btn" id="tab-dash" onclick="switchView('dash')">대시보드</button>
+    <button class="tab-btn" id="tab-hist" onclick="switchView('history')">이력</button>
+  </div>
+  <button onclick="toggleLang()" id="lang-btn" style="
+    padding:3px 8px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:11px;font-weight:700;
+    font-family:inherit;cursor:pointer;flex-shrink:0;letter-spacing:0.3px;
+    transition:all .15s;
+  ">KO</button>
+  <button onclick="exportData()" title="백업" style="
+    padding:3px 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:13px;
+    font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
+  ">⬇</button>
+  <label title="복원" style="
+    padding:3px 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:13px;
+    cursor:pointer;flex-shrink:0;transition:all .15s;
+  ">⬆<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+  <a href="/privacy.html" style="font-size:10px;color:rgba(255,255,255,0.45);text-decoration:none;flex-shrink:0" title="개인정보처리방침">🔒</a>
+</div>
+
+<div id="main"></div>
+<!-- 배너 광고 영역 (목록/대시보드에서만 표시) -->
+<div id="ad-banner" style="
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  background:#fff;border-top:1px solid #e4e7f0;
+  display:flex;align-items:center;justify-content:center;
+  padding:6px 8px;z-index:15;
+  min-height:60px;
+">
+  <!-- AdSense 배너 광고 -->
+  <!-- ca-pub-XXXXXXXXXXXXXXXX 와 data-ad-slot 을 실제 값으로 교체 -->
+  <ins class="adsbygoogle"
+       style="display:block;width:100%;max-width:468px;height:60px"
+       data-ad-client="ca-pub-8440663734931688"
+       data-ad-slot="XXXXXXXXXX"
+       data-ad-format="horizontal"
+       data-full-width-responsive="false"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+<button id="fab" onclick="openAddModal()">+</button>
+
+<script>
+const STORAGE_KEY='kpi_v4';
+
+/* ── 다국어 ── */
+let lang='ko';
+const T={
+  ko:{
+    list:'목록', dash:'대시보드', hist:'이력',
+    add:'+ 추가', addTitle:'새 KPI 추가', editTitle:'KPI 수정',
+    nameLbl:'목표 이름 *', namePh:'예: 월 매출 2,000만원 달성',
+    catLbl:'카테고리', unitLbl:'단위', unitPh:'만원, km, 건...',
+    targetLbl:'목표 수치 *', deadlineLbl:'마감일', noteLbl:'메모', notePh:'추가 메모',
+    cancel:'취소', save:'저장',
+    logTitle:'진행 기록', logLbl:'달성 수치 입력', logPh:'+값 입력', logNote:'오늘의 기록...', logBtn:'기록',
+    histTitle:'📋 히스토리', noLog:'아직 기록이 없어요', close:'닫기',
+    totalKpi:'전체 KPI', doneKpi:'달성 완료', avgPct:'평균 진행률',
+    overview:'🔵 전체 현황', rankTitle:'🏆 달성률 전체 순위', ddayTitle:'⏰ 마감 임박',
+    empty:'아직 KPI가 없어요', emptyList:'KPI를 추가해 목표를 관리하세요',
+    sortPct:'📊 달성률순', sortManual:'✋ 수동순',
+    cats:['업무','개인','운동','학습','재무'],
+    avg:'평균', today:'오늘 마감',
+    regKpi:'등록 KPI', doneCnt:'달성 완료', totalLog:'총 기록',
+    noHistory:'아직 KPI가 없어요', noYearData:'년 데이터가 없어요',
+    histChart:'년 달성률 현황',
+    catDone:'개 달성', catAvg:'평균',
+    createdAt:'생성', deadline2:'마감',
+    doneLabel:'✅ 달성완료', inProgress:'진행중', noYearLog:'이 연도에 기록이 없어요',
+    deleteConfirm:'삭제할까요?', saveFail:'저장 실패',
+    dday:(d)=>d>0?`D-${d}`:d===0?'오늘 마감':`D+${Math.abs(d)}`,
+  },
+  en:{
+    list:'List', dash:'Dashboard', hist:'History',
+    add:'+ Add', addTitle:'New KPI', editTitle:'Edit KPI',
+    nameLbl:'Goal Name *', namePh:'e.g. Monthly revenue ₩20M',
+    catLbl:'Category', unitLbl:'Unit', unitPh:'km, times, $...',
+    targetLbl:'Target *', deadlineLbl:'Deadline', noteLbl:'Note', notePh:'Additional note',
+    cancel:'Cancel', save:'Save',
+    logTitle:'Log Progress', logLbl:'Enter value', logPh:'+value', logNote:"Today's note...", logBtn:'Log',
+    histTitle:'📋 History', noLog:'No records yet', close:'Close',
+    totalKpi:'Total KPI', doneKpi:'Achieved', avgPct:'Avg Progress',
+    overview:'🔵 Overview', rankTitle:'🏆 Full Rankings', ddayTitle:'⏰ Deadline Soon',
+    empty:'No KPIs yet', emptyList:'Add a KPI to track your goals',
+    sortPct:'📊 By Progress', sortManual:'✋ Manual',
+    cats:['Work','Personal','Exercise','Study','Finance'],
+    avg:'avg', today:'Due today',
+    regKpi:'KPIs', doneCnt:'Achieved', totalLog:'Records',
+    noHistory:'No KPIs yet', noYearData:' no data',
+    histChart:' Progress',
+    catDone:'achieved', catAvg:'avg',
+    createdAt:'Created', deadline2:'Due',
+    doneLabel:'✅ Achieved', inProgress:'In Progress', noYearLog:'No records this year',
+    deleteConfirm:'Delete this KPI?', saveFail:'Save failed',
+    dday:(d)=>d>0?`D-${d}`:d===0?'Due today':`D+${Math.abs(d)}`,
+  }
+};
+function t(key,...args){ return T[lang][key]||T.ko[key]||key; }
+function toggleLang(){
+  lang=lang==='ko'?'en':'ko';
+  const btn=document.getElementById('lang-btn');
+  if(btn) btn.textContent=lang==='ko'?'KO':'EN';
+  // 탭 텍스트 업데이트
+  const tl=T[lang];
+  document.getElementById('tab-list').textContent=tl.list;
+  document.getElementById('tab-dash').textContent=tl.dash;
+  document.getElementById('tab-hist').textContent=tl.hist;
+  // CATS 동적 업데이트 (카테고리는 저장된 데이터 기준이라 UI만)
+  save();
+  render();
+}
+const CATS=['업무','개인','운동','학습','재무'];
+const CAT_COLOR={업무:'#4f46e5',개인:'#7c3aed',운동:'#059669',학습:'#d97706',재무:'#e11d48'};
+const CAT_BG={업무:'#eef2ff',개인:'#f5f3ff',운동:'#ecfdf5',학습:'#fffbeb',재무:'#fff1f2'};
+
+let goals=[], view='list', filter='전체', sortMode='pct';
+let cardScale=100;
+const SCALE_STEP=5, SCALE_MIN=40, SCALE_MAX=100;
+
+
+// FAB 자동 숨김
+let fabTimer=null;
+const fab=document.getElementById('fab');
+function resetFabTimer(){
+  fab.classList.remove('hidden');
+  clearTimeout(fabTimer);
+  fabTimer=setTimeout(()=>fab.classList.add('hidden'),3000);
+}
+document.addEventListener('touchstart',resetFabTimer,{passive:true});
+document.addEventListener('click',resetFabTimer,{passive:true});
+
+// 숫자 포맷 (천단위 ,)
+function fmt(n){
+  if(n==null||n==='') return '';
+  return Number(n).toLocaleString('ko-KR');
+}
+
+function load(){
+  try{
+    const d=JSON.parse(localStorage.getItem(STORAGE_KEY));
+    goals=d.goals||[]; cardScale=d.scale||100; lang=d.lang||'ko';
+
+  }catch{goals=[];cardScale=100;}
+}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,scale:cardScale,lang}));}catch(e){console.warn(T[lang].saveFail,e);}}
+function exportData(){
+  const data=JSON.stringify({goals,scale:cardScale,lang},null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const d=new Date();
+  a.href=url;
+  a.download=`kpi-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(!Array.isArray(d.goals)) throw new Error('invalid');
+      goals=d.goals;
+      if(d.scale) cardScale=d.scale;
+      if(d.lang) lang=d.lang;
+      save();render();
+      alert(lang==='ko'?`✅ ${goals.length}개 KPI 복원 완료!`:`✅ ${goals.length} KPIs restored!`);
+    }catch{
+      alert(lang==='ko'?'❌ 올바른 백업 파일이 아니에요':'❌ Invalid backup file');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+function genId(){return Math.random().toString(36).slice(2,9);}
+function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function pctVal(g){return g.target>0?Math.round((g.current/g.target)*100):0;}
+
+function render(){
+  if(view==='dash') document.getElementById('main').innerHTML=renderDash();
+  else if(view==='history') document.getElementById('main').innerHTML=renderHistory();
+  else document.getElementById('main').innerHTML=renderList();
+  if(view==='list'){applyScale();initDrag();}
+  if(view==='dash') drawCharts();
+  resetFabTimer();
+}
+function switchView(v){
+  view=v;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',(i===0&&v==='list')||(i===1&&v==='dash')||(i===2&&v==='history'));
+  });
+  fab.style.display = v==='history'?'none':'flex';
+  render();
+}
+
+/* ── Scale ── */
+function applyScale(){
+  const t=(cardScale-SCALE_MIN)/(SCALE_MAX-SCALE_MIN);
+  const h=Math.round(38+(72-38)*t);
+  const actH=Math.round(22+(32-22)*t);
+  const fs=Math.max(9,Math.round(13*cardScale/100));
+  const fsS=Math.max(8,Math.round(11*cardScale/100));
+  const fsXS=Math.max(7,Math.round(10*cardScale/100));
+  const ring=Math.max(28,Math.round(44*cardScale/100));
+  const r=document.documentElement;
+  r.style.setProperty('--card-h',h+'px');
+  r.style.setProperty('--act-h',actH+'px');
+  r.style.setProperty('--fs',fs+'px');
+  r.style.setProperty('--fsS',fsS+'px');
+  r.style.setProperty('--fsXS',fsXS+'px');
+  r.style.setProperty('--ring',ring+'px');
+  const lbl=document.getElementById('size-label');
+  if(lbl) lbl.textContent=cardScale+'%';
+}
+function scaleUp(){if(cardScale<SCALE_MAX){cardScale=Math.min(SCALE_MAX,cardScale+SCALE_STEP);save();applyScale();}}
+function scaleDown(){if(cardScale>SCALE_MIN){cardScale=Math.max(SCALE_MIN,cardScale-SCALE_STEP);save();applyScale();}}
+
+/* ── Dashboard ── */
+function renderDash(){
+  const total=goals.length, done=goals.filter(g=>g.current>=g.target).length;
+  const avg=total?Math.round(goals.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/total):0;
+  const byCat=CATS.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
+  const sorted=[...goals].sort((a,b)=>pctVal(b)-pctVal(a));
+  const urgent=goals.filter(g=>g.deadline).map(g=>{
+    const diff=Math.ceil((new Date(g.deadline)-new Date())/86400000);
+    return {...g,diff};
+  }).filter(g=>g.diff>=0&&g.diff<=30).sort((a,b)=>a.diff-b.diff);
+
+  let h=`<div id="dash-main">`;
+  h+=`<div class="stat-grid">
+    <div class="stat-card"><div class="stat-val">${total}<sub>개</sub></div><div class="stat-label">${t("totalKpi")}</div></div>
+    <div class="stat-card"><div class="stat-val">${done}<sub>개</sub></div><div class="stat-label">${t("doneCnt")}</div></div>
+    <div class="stat-card"><div class="stat-val">${avg}<sub>%</sub></div><div class="stat-label">${t("avgPct")}</div></div>
+  </div>`;
+
+  if(!goals.length) return h+`<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">${t("empty")}</div></div></div>`;
+
+  // ① 전체 현황 (도넛 + 카테고리 바)
+  h+=`<div class="section-card">
+    <div class="section-title">${t("overview")}</div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="position:relative;flex-shrink:0">
+        <canvas id="donut-chart" width="90" height="90"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-size:16px;font-weight:800;color:#1a1d2e;line-height:1">${avg}%</div>
+          <div style="font-size:10px;color:#6b7280;margin-top:2px">${t("avg")}</div>
+        </div>
+      </div>
+      <div style="flex:1">${byCat.map(({cat,items})=>{
+        const a=Math.round(items.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/items.length);
+        return `<div class="cat-row" style="margin-bottom:6px">
+          <div class="cat-label" style="color:${CAT_COLOR[cat]}">${cat}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${a}%;background:${CAT_COLOR[cat]}"></div></div>
+          <div class="bar-pct">${a}%</div>
+        </div>`;
+      }).join('')}</div>
+    </div>
+  </div>`;
+
+  // ② 달성률 전체 순위 (전체현황 스타일로)
+  h+=`<div class="section-card">
+    <div class="section-title">🏆 달성률 전체 순위</div>`;
+  sorted.forEach((g,i)=>{
+    const p=pctVal(g), color=CAT_COLOR[g.category];
+    const medals=['🥇','🥈','🥉'];
+    const rank=i<3?medals[i]:`<span style="font-size:12px;font-weight:800;color:var(--mute)">${i+1}</span>`;
+    h+=`<div class="cat-row">
+      <div style="width:22px;text-align:center;flex-shrink:0;font-size:15px">${rank}</div>
+      <div style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0"></div>
+      <div class="cat-label" style="color:${color};width:auto;flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(g.title)}</div>
+      <div class="bar-track" style="max-width:120px"><div class="bar-fill" style="width:${Math.min(100,p)}%;background:${color}"></div></div>
+      <div class="bar-pct" style="color:${color};font-weight:800">${p}%</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  // ③ D-day 임박
+  if(urgent.length){
+    h+=`<div class="section-card"><div class="section-title">⏰ 마감 임박</div>`;
+    urgent.slice(0,4).forEach(g=>{
+      const color=CAT_COLOR[g.category], col=g.diff<7?'#dc2626':'#d97706';
+      h+=`<div class="cat-row">
+        <div style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <div style="flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(g.title)}</div>
+        <div style="font-size:12px;font-weight:700;color:${col};flex-shrink:0">${t('dday')(g.diff)}</div>
+        <div style="font-size:12px;color:var(--sub);flex-shrink:0;min-width:36px;text-align:right">${pctVal(g)}%</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  return h+`</div>`;
+}
+
+/* ── 차트 그리기 ── */
+function drawCharts(){
+  drawDonut();
+}
+
+function drawDonut(){
+  const canvas=document.getElementById('donut-chart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const byCat=CATS.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
+  if(!byCat.length) return;
+  const W=canvas.width, H=canvas.height;
+  const cx=W/2, cy=H/2, outerR=38, innerR=24;
+  ctx.clearRect(0,0,W,H);
+  let startAngle=-Math.PI/2;
+  const total=byCat.reduce((s,{items})=>s+items.length,0);
+  byCat.forEach(({cat,items})=>{
+    const slice=(items.length/total)*2*Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,outerR,startAngle,startAngle+slice);
+    ctx.closePath();
+    ctx.fillStyle=CAT_COLOR[cat];
+    ctx.fill();
+    startAngle+=slice;
+  });
+  // inner hole
+  ctx.beginPath();
+  ctx.arc(cx,cy,innerR,0,2*Math.PI);
+  ctx.fillStyle='#fff';
+  ctx.fill();
+}
+
+
+/* ── List ── */
+function renderList(){
+  const used=['전체',...CATS.filter(c=>goals.some(g=>g.category===c))];
+  let h=`<div id="filter-bar">`+used.map(c=>`<button class="filter-chip${c===filter?' active':''}" onclick="setFilter('${c}')">${c}</button>`).join('')+`</div>`;
+  h+=`<div id="ctrl-bar">
+    <button class="size-btn" onclick="scaleDown()">−</button>
+    <span id="size-label">${cardScale}%</span>
+    <button class="size-btn" onclick="scaleUp()">+</button>
+    <button class="sort-btn" onclick="toggleSort()">${sortMode==='pct'?t('sortPct'):t('sortManual')}</button>
+  </div>`;
+  let list=filter==='전체'?[...goals]:goals.filter(g=>g.category===filter);
+  if(sortMode==='pct') list=[...list].sort((a,b)=>pctVal(b)-pctVal(a));
+  if(!list.length) return h+`<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">KPI를 추가해 목표를 관리하세요</div></div>`;
+  return h+`<div id="card-list">`+list.map(renderCard).join('')+`</div>`;
+}
+function setFilter(c){filter=c;render();}
+function toggleSort(){
+  if(sortMode==='pct'){
+    // 달성률순으로 goals 배열 정렬 후 수동 모드 진입
+    goals.sort((a,b)=>pctVal(b)-pctVal(a));
+    save();
+  }
+  sortMode=sortMode==='pct'?'manual':'pct';
+  render();
+}
+
+/* ── 달성이력 ── */
+let histYear = null; // 선택된 연도
+
+function renderHistory(){
+  // 모든 연도 추출 (createdAt + logs.date 기준)
+  const yearSet = new Set();
+  goals.forEach(g=>{
+    if(g.createdAt) yearSet.add(g.createdAt.slice(0,4));
+    (g.logs||[]).forEach(l=>{ if(l.date) yearSet.add(l.date.slice(0,4)); });
+  });
+  const years=[...yearSet].sort((a,b)=>b-a);
+  const curYear=new Date().getFullYear().toString();
+  if(!histYear || !yearSet.has(histYear)) histYear = years[0]||curYear;
+  if(!years.length) years.push(curYear);
+
+  if(!goals.length){
+    return `<div id="history-main"><div class="no-history"><div style="font-size:36px;margin-bottom:10px">📂</div><div style="font-size:13px">${t("noHistory")}</div></div></div>`;
+  }
+
+  // 연도 탭
+  let h=`<div id="year-tab-bar">`;
+  years.forEach(y=>{
+    h+=`<button class="year-chip${y===histYear?' active':''}" onclick="selectHistYear('${y}')">${y}년</button>`;
+  });
+  h+=`</div>`;
+
+  h+=`<div id="history-main">`;
+
+  // 선택 연도의 목표들 필터 (해당 연도에 생성되었거나 로그가 있는 것)
+  const yrGoals = goals.filter(g=>{
+    const created = (g.createdAt||'').slice(0,4)===histYear;
+    const hasLog = (g.logs||[]).some(l=>(l.date||'').slice(0,4)===histYear);
+    return created || hasLog;
+  });
+
+  // 연도 요약 통계
+  const total=yrGoals.length;
+  const done=yrGoals.filter(g=>g.current>=g.target).length;
+  const yrLogs=yrGoals.flatMap(g=>(g.logs||[]).filter(l=>(l.date||'').slice(0,4)===histYear));
+  const totalLogs=yrLogs.length;
+
+  h+=`<div class="year-stats">
+    <div class="ys-card"><div class="ys-val">${total}<sub>개</sub></div><div class="ys-label">${t("regKpi")}</div></div>
+    <div class="ys-card"><div class="ys-val" style="color:var(--green)">${done}<sub>개</sub></div><div class="ys-label">달성 완료</div></div>
+    <div class="ys-card"><div class="ys-val" style="color:var(--blue)">${totalLogs}<sub>건</sub></div><div class="ys-label">${t("totalLog")}</div></div>
+  </div>`;
+
+  if(!yrGoals.length){
+    h+=`<div class="no-history" style="padding:30px 0"><div style="font-size:13px;color:var(--mute)">${histYear}년 데이터가 없어요</div></div>`;
+    return h+`</div>`;
+  }
+
+  // 달성률 현황 - 전체현황과 동일한 스타일
+  const yrSorted=[...yrGoals].sort((a,b)=>pctVal(b)-pctVal(a));
+  h+=`<div class="section-card" style="margin-bottom:10px">
+    <div class="section-title">${histYear}${t('histChart')}</div>
+    ${yrSorted.map((g,i)=>{
+      const p=pctVal(g), color=CAT_COLOR[g.category];
+      const medals=['🥇','🥈','🥉'];
+      const rank=i<3?medals[i]:`<span style="font-size:12px;font-weight:800;color:var(--mute)">${i+1}</span>`;
+      return `<div class="cat-row">
+        <div style="width:22px;text-align:center;flex-shrink:0;font-size:15px">${rank}</div>
+        <div style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <div style="flex:1;font-size:13px;font-weight:600;color:${color};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(g.title)}</div>
+        <div class="bar-track" style="max-width:100px"><div class="bar-fill" style="width:${Math.min(100,p)}%;background:${color}"></div></div>
+        <div class="bar-pct" style="color:${color};font-weight:800">${p}%</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // 카테고리별 분류
+  const byCat = CATS.map(c=>({cat:c, items:yrGoals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
+  byCat.forEach(({cat,items})=>{
+    const catDone=items.filter(g=>g.current>=g.target).length;
+    const catAvg=Math.round(items.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/items.length);
+    h+=`<div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${CAT_COLOR[cat]};flex-shrink:0"></div>
+        <div style="font-size:12px;font-weight:800;color:${CAT_COLOR[cat]}">${cat}</div>
+        <div style="font-size:10px;color:var(--sub);margin-left:auto">${catDone}/${items.length}개 달성 · 평균 ${catAvg}%</div>
+      </div>`;
+    items.sort((a,b)=>pctVal(b)-pctVal(a)).forEach(g=>{
+      const p=pctVal(g), disp=Math.min(100,p);
+      const color=CAT_COLOR[g.category], bg=CAT_BG[g.category];
+      const yrGoalLogs=(g.logs||[]).filter(l=>(l.date||'').slice(0,4)===histYear);
+      const gid='hg-'+g.id;
+      h+=`<div class="hist-goal-card">
+        <div class="hist-goal-header" onclick="toggleHistGoal('${gid}')">
+          <div style="flex-shrink:0">
+            <svg width="32" height="32" viewBox="0 0 44 44" style="transform:rotate(-90deg)">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="#f0f0f0" stroke-width="4"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="${color}" stroke-width="4"
+                stroke-dasharray="${(2*Math.PI*18).toFixed(1)}"
+                stroke-dashoffset="${(2*Math.PI*18*(1-disp/100)).toFixed(1)}"
+                stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="hist-goal-info">
+            <div class="hist-goal-title">${esc(g.title)}</div>
+            <div class="hist-goal-sub">${fmt(g.current)} / ${fmt(g.target)} ${esc(g.unit||'')} · ${yrGoalLogs.length}건 기록</div>
+          </div>
+          <div class="hist-goal-pct" style="color:${color}">${p}%</div>
+          <div class="hist-goal-arrow" id="arr-${gid}">▶</div>
+        </div>
+        <div class="hist-goal-body" id="${gid}">
+          <div class="hist-mini-bar">
+            <div class="hist-mini-fill" style="width:${disp}%;background:${color}"></div>
+          </div>
+          <div style="font-size:10px;color:var(--sub);margin-bottom:8px">
+            ${g.deadline?'마감: '+g.deadline+' · ':''} 
+            생성: ${g.createdAt||'-'} · 
+            ${g.current>=g.target?'✅ 달성완료':'진행중'}
+          </div>
+          ${yrGoalLogs.length===0
+            ? `<div style="font-size:12px;color:var(--mute);padding:8px 0">이 연도에 기록이 없어요</div>`
+            : [...yrGoalLogs].reverse().map(l=>`
+              <div class="hist-log-row">
+                <div class="hist-log-date">${l.date}</div>
+                <div class="hist-log-val" style="background:${bg};color:${color}">+${fmt(l.value)} ${esc(g.unit||'')}</div>
+                ${l.note?`<div class="hist-log-note">${esc(l.note)}</div>`:''}
+              </div>`).join('')
+          }
+        </div>
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+
+  h+=`</div>`;
+  // 차트 그리기는 DOM 삽입 후
+  return h;
+}
+
+function selectHistYear(y){
+  histYear=y;
+  render();
+}
+function toggleHistGoal(id){
+  const body=document.getElementById(id);
+  const arr=document.getElementById('arr-'+id);
+  if(!body) return;
+  const open=body.classList.toggle('open');
+  if(arr) arr.classList.toggle('open', open);
+}
+
+
+/* ── Card ── */
+function renderCard(g){
+  const p=pctVal(g), dispPct=Math.min(100,p);
+  const color=CAT_COLOR[g.category], bg=CAT_BG[g.category];
+  const done=p>=100;
+  let dday='';
+  if(g.deadline){
+    const diff=Math.ceil((new Date(g.deadline)-new Date())/86400000);
+    const col=diff<7?'#dc2626':'#aaa';
+    dday=`<span style="font-size:var(--fsXS,9px);color:${col}">${diff>0?'D-'+diff:diff===0?'오늘':'D+'+Math.abs(diff)}</span>`;
+  }
+  // SVG ring: viewBox 고정(0 0 44 44), CSS로 크기 제어 → 깨짐 없음
+  const dashTotal=2*Math.PI*18; // r=18
+  const dashOffset=(dashTotal*(1-dispPct/100)).toFixed(1);
+  const ring=`<svg class="ring-svg" viewBox="0 0 44 44">
+    <circle cx="22" cy="22" r="18" fill="none" stroke="#f0f0f0" stroke-width="3.5"/>
+    <circle cx="22" cy="22" r="18" fill="none" stroke="${color}" stroke-width="3.5"
+      stroke-dasharray="${dashTotal.toFixed(1)}" stroke-dashoffset="${dashOffset}" stroke-linecap="round"/>
+  </svg>`;
+  const handle=sortMode==='manual'?`<div class="drag-handle"><div></div><div></div><div></div></div>`:'';
+  return `<div class="kpi-card${done?' done':''}" data-id="${g.id}" draggable="${sortMode==='manual'}">
+    ${done?`<div class="done-badge" style="font-size:var(--fsXS,9px)">✓달성</div>`:''}
+    <div class="card-inner">
+      <div class="ring-wrap">
+        ${ring}
+        <div class="ring-label" style="font-size:var(--fsXS,9px);color:${color}">${p}%</div>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-chips">
+          <span class="cat-chip" style="background:${bg};color:${color};font-size:var(--fsXS,9px)">${g.category}</span>${dday}
+        </div>
+        <div class="kpi-title" style="font-size:var(--fs,13px)">${esc(g.title)}</div>
+        <div class="kpi-nums" style="font-size:var(--fsS,11px)">${fmt(g.current)} / ${fmt(g.target)} ${esc(g.unit||"")}</div>
+        <div class="kpi-bar-wrap"><div class="kpi-bar-fill" style="width:${dispPct}%;background:${color}"></div></div>
+      </div>
+      ${handle}
+    </div>
+    <div class="kpi-actions" style="height:var(--act-h,30px)">
+      <button class="act-btn act-log" style="background:${color};font-size:var(--fsS,11px)" onclick="openLog('${g.id}')">+ 기록</button>
+      <button class="act-btn act-hist" style="font-size:var(--fsS,11px)" onclick="openHist('${g.id}')">히스토리</button>
+      <button class="act-btn act-edit" style="font-size:var(--fsS,11px)" onclick="openEdit('${g.id}')">수정</button>
+      <button class="act-btn act-del" style="font-size:var(--fsS,11px)" onclick="delGoal('${g.id}')">삭제</button>
+    </div>
+  </div>`;
+}
+
+/* ── Drag ── */
+function initDrag(){
+  if(sortMode!=='manual') return;
+  const list=document.getElementById('card-list');
+  if(!list) return;
+  let dragging=null, placeholder=null;
+  function getCard(el){while(el&&!el.classList.contains('kpi-card'))el=el.parentElement;return el;}
+  function cards(){return[...list.querySelectorAll('.kpi-card')];}
+  list.addEventListener('touchstart',e=>{
+    const h=e.target.closest('.drag-handle');
+    if(!h) return;
+    e.preventDefault();
+    dragging=getCard(h); if(!dragging) return;
+    dragging.style.opacity='0.5';
+    placeholder=document.createElement('div');
+    placeholder.style.cssText=`height:${dragging.offsetHeight}px;margin-bottom:6px;border-radius:12px;background:#e8f0fe;border:2px dashed var(--blue)`;
+    list.insertBefore(placeholder,dragging.nextSibling);
+  },{passive:false});
+  list.addEventListener('touchmove',e=>{
+    if(!dragging) return; e.preventDefault();
+    const y=e.touches[0].clientY;
+    dragging.style.cssText=`opacity:0.5;position:fixed;width:${list.offsetWidth}px;left:${list.getBoundingClientRect().left}px;top:${y-40}px;z-index:999`;
+    const els=cards().filter(c=>c!==dragging);
+    for(const c of els){
+      const mid=c.getBoundingClientRect().top+c.offsetHeight/2;
+      if(y<mid){list.insertBefore(placeholder,c);break;}
+      else if(c===els[els.length-1]) list.appendChild(placeholder);
+    }
+  },{passive:false});
+  list.addEventListener('touchend',e=>{
+    if(!dragging) return;
+    dragging.style.cssText=''; list.insertBefore(dragging,placeholder); placeholder.remove();
+    const order=cards().map(c=>c.dataset.id);
+    goals.sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));
+    save(); dragging=null; placeholder=null;
+  });
+}
+
+/* ── CRUD ── */
+function delGoal(id){if(confirm(t('deleteConfirm'))){goals=goals.filter(g=>g.id!==id);save();render();}}
+
+function openAddModal(){
+  showModal(`<div class="modal-title">${t("addTitle")}</div>
+    <label>${t("nameLbl")}</label>
+    <input id="f-title" placeholder="${t('namePh')}" oninput="chkSave()">
+    <div class="row2">
+      <div><label>${t("catLbl")}</label><select id="f-cat">${CATS.map(c=>`<option>${c}</option>`).join('')}</select></div>
+      <div><label>${t("unitLbl")}</label><input id="f-unit" placeholder="${t('unitPh')}"></div>
+    </div>
+    <div class="row2">
+      <div><label>${t("targetLbl")}</label><input id="f-target" type="number" placeholder="100" oninput="chkSave()"></div>
+      <div><label>${t("deadlineLbl")}</label><input id="f-deadline" type="date"></div>
+    </div>
+    <label>${t("noteLbl")}</label><textarea id="f-note" placeholder="${t('notePh')}"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">${t("cancel")}</button>
+      <button id="btn-save" class="btn-save" disabled onclick="saveAdd()">${t("save")}</button>
+    </div>`);
+}
+function chkSave(){
+  const t=document.getElementById('f-title')?.value.trim();
+  const n=document.getElementById('f-target')?.value;
+  const b=document.getElementById('btn-save');
+  if(b) b.disabled=!(t&&Number(n)>0);
+}
+function saveAdd(){
+  goals.unshift({id:genId(),
+    title:document.getElementById('f-title').value.trim(),
+    category:document.getElementById('f-cat').value,
+    unit:document.getElementById('f-unit').value.trim(),
+    target:Number(document.getElementById('f-target').value),
+    deadline:document.getElementById('f-deadline').value,
+    note:document.getElementById('f-note').value.trim(),
+    current:0,logs:[],createdAt:today()
+  });
+  save();closeModal();render();
+}
+function openEdit(id){
+  const g=goals.find(x=>x.id===id);
+  showModal(`<div class="modal-title">${t("editTitle")}</div>
+    <label>목표 이름 *</label>
+    <input id="f-title" value="${esc(g.title)}" oninput="chkSave()">
+    <div class="row2">
+      <div><label>${t("catLbl")}</label><select id="f-cat">${CATS.map(c=>`<option${c===g.category?' selected':''}>${c}</option>`).join('')}</select></div>
+      <div><label>단위</label><input id="f-unit" value="${esc(g.unit||"")}"></div>
+    </div>
+    <div class="row2">
+      <div><label>목표 수치 *</label><input id="f-target" type="number" value="${g.target}"></div>
+      <div><label>마감일</label><input id="f-deadline" type="date" value="${g.deadline||''}"></div>
+    </div>
+    <label>메모</label><textarea id="f-note">${esc(g.note||"")}</textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">${t("cancel")}</button>
+      <button class="btn-save" onclick="saveEdit('${id}')">${t("save")}</button>
+    </div>`);
+}
+function saveEdit(id){
+  const i=goals.findIndex(x=>x.id===id);
+  goals[i]={...goals[i],
+    title:document.getElementById('f-title').value.trim(),
+    category:document.getElementById('f-cat').value,
+    unit:document.getElementById('f-unit').value.trim(),
+    target:Number(document.getElementById('f-target').value),
+    deadline:document.getElementById('f-deadline').value,
+    note:document.getElementById('f-note').value.trim()
+  };
+  save();closeModal();render();
+}
+function openLog(id){
+  const g=goals.find(x=>x.id===id);
+  showModal(`<div class="modal-title">${t("logTitle")}</div>
+    <div style="font-size:13px;color:#555;margin-bottom:12px">
+      <b>${esc(g.title)}</b><br>
+      현재 <b>${fmt(g.current)}</b> / 목표 <b>${fmt(g.target)} ${esc(g.unit)}</b>
+    </div>
+    <label>${t("logLbl")}</label>
+    <input id="l-val" type="number" placeholder="${t('logPh')}" oninput="chkLog()">
+    <label>${t("noteLbl")}</label>
+    <input id="l-note" placeholder="${t('logNote')}">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">${t("cancel")}</button>
+      <button id="btn-log" class="btn-save" disabled onclick="saveLog('${id}')">${t('logBtn')}</button>
+    </div>`);
+  setTimeout(()=>document.getElementById('l-val')?.focus(),100);
+}
+function chkLog(){const v=document.getElementById('l-val')?.value;const b=document.getElementById('btn-log');if(b)b.disabled=!v;}
+function saveLog(id){
+  const val=parseFloat(document.getElementById('l-val').value)||0;
+  if(!val) return;
+  const note=document.getElementById('l-note').value.trim();
+  const i=goals.findIndex(x=>x.id===id);
+  goals[i].current=Math.max(0,goals[i].current+val);
+  goals[i].logs.push({date:today(),value:val,note});
+  save();closeModal();render();
+}
+function openHist(id){
+  const g=goals.find(x=>x.id===id);
+  const color=CAT_COLOR[g.category],bg=CAT_BG[g.category];
+  const rows=g.logs.length
+    ?[...g.logs].reverse().map(l=>`<div class="hist-item">
+        <div class="hist-date">${l.date}</div>
+        <div class="hist-val" style="background:${bg};color:${color}">+${fmt(l.value)} ${esc(g.unit)}</div>
+        ${l.note?`<div class="hist-note">${esc(l.note)}</div>`:''}
+      </div>`).join('')
+    :`<div style="text-align:center;padding:28px 0;color:#ccc;font-size:13px">${t('noLog')}</div>`;
+  showModal(`<div class="modal-title">${t("histTitle")}</div>
+    <div style="font-size:12px;color:#888;margin-bottom:12px">${esc(g.title)}</div>
+    <div style="overflow-y:auto;max-height:260px">${rows}</div>
+    <button class="btn-full" onclick="closeModal()">${t("close")}</button>`,true);
+}
+function showModal(html,sheet=false){
+  closeModal();
+  const ov=document.createElement('div');
+  ov.className='overlay'+(sheet?' bottom':'');
+  ov.id='modal-ov';
+  ov.innerHTML=`<div class="modal-box${sheet?' sheet':''}">${html}</div>`;
+  ov.addEventListener('click',e=>{if(e.target===ov)closeModal();});
+  document.body.appendChild(ov);
+}
+function closeModal(){document.getElementById('modal-ov')?.remove();}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+}
+
+load();
+// 언어 버튼 초기 상태
+const _lb=document.getElementById('lang-btn');
+if(_lb) _lb.textContent=lang==='ko'?'KO':'EN';
+const _tl=T[lang];
+const _tli=document.getElementById('tab-list');
+const _tdi=document.getElementById('tab-dash');
+const _thi=document.getElementById('tab-hist');
+if(_tli) _tli.textContent=_tl.list;
+if(_tdi) _tdi.textContent=_tl.dash;
+if(_thi) _thi.textContent=_tl.hist;
+render(); resetFabTimer();
+</script>
+</body>
+</html>
