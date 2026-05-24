@@ -317,15 +317,12 @@ function toggleLang(){
   lang=lang==='ko'?'en':'ko';
   const btn=document.getElementById('lang-btn');
   if(btn) btn.textContent=lang==='ko'?'KO':'EN';
-  // 로고 변경
   const logo=document.querySelector('.logo');
   if(logo) logo.innerHTML=lang==='ko'?'해<span>냄</span>':'DID <span>IT</span>';
-  // 탭 텍스트 업데이트
   const tl=T[lang];
   document.getElementById('tab-list').textContent=tl.list;
   document.getElementById('tab-dash').textContent=tl.dash;
   document.getElementById('tab-hist').textContent=tl.hist;
-  // CATS 동적 업데이트 (카테고리는 저장된 데이터 기준이라 UI만)
   save();
   render();
 }
@@ -333,8 +330,8 @@ const CATS_KO=['업무','개인','운동','학습','재무'];
 const CATS_EN=['Work','Personal','Exercise','Study','Finance'];
 const CAT_KO_TO_EN={업무:'Work',개인:'Personal',운동:'Exercise',학습:'Study',재무:'Finance'};
 const CAT_EN_TO_KO={Work:'업무',Personal:'개인',Exercise:'운동',Study:'학습',Finance:'재무'};
+const CATS=CATS_KO;
 function getCats(){return lang==='ko'?CATS_KO:CATS_EN;}
-function catToKo(c){return CAT_EN_TO_KO[c]||c;}
 function catDisplay(c){return lang==='ko'?c:(CAT_KO_TO_EN[c]||c);}
 const CAT_COLOR={업무:'#4f46e5',개인:'#7c3aed',운동:'#059669',학습:'#d97706',재무:'#e11d48'};
 const CAT_BG={업무:'#eef2ff',개인:'#f5f3ff',운동:'#ecfdf5',학습:'#fffbeb',재무:'#fff1f2'};
@@ -448,7 +445,7 @@ function scaleDown(){if(cardScale>SCALE_MIN){cardScale=Math.max(SCALE_MIN,cardSc
 function renderDash(){
   const total=goals.length, done=goals.filter(g=>g.current>=g.target).length;
   const avg=total?Math.round(goals.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/total):0;
-  const byCat=CATS_KO.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
+  const byCat=CATS.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
   const sorted=[...goals].sort((a,b)=>pctVal(b)-pctVal(a));
   const urgent=goals.filter(g=>g.deadline).map(g=>{
     const diff=Math.ceil((new Date(g.deadline)-new Date())/86400000);
@@ -530,7 +527,7 @@ function drawDonut(){
   const canvas=document.getElementById('donut-chart');
   if(!canvas) return;
   const ctx=canvas.getContext('2d');
-  const byCat=CATS_KO.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
+  const byCat=CATS.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
   if(!byCat.length) return;
   const W=canvas.width, H=canvas.height;
   const cx=W/2, cy=H/2, outerR=38, innerR=24;
@@ -557,7 +554,7 @@ function drawDonut(){
 
 /* ── List ── */
 function renderList(){
-  const used=['전체',...CATS_KO.filter(c=>goals.some(g=>g.category===c))];
+  const used=['전체',...CATS.filter(c=>goals.some(g=>g.category===c))];
   let h=`<div id="filter-bar">`+used.map(c=>`<button class="filter-chip${c===filter?' active':''}" onclick="setFilter('${c}')">${c==='전체'?(lang==='ko'?'전체':'All'):catDisplay(c)}</button>`).join('')+`</div>`;
   h+=`<div id="ctrl-bar">
     <button class="size-btn" onclick="scaleDown()">−</button>
@@ -623,13 +620,13 @@ function renderHistory(){
   const totalLogs=yrLogs.length;
 
   h+=`<div class="year-stats">
-    <div class="ys-card"><div class="ys-val">${total}<sub>개</sub></div><div class="ys-label">${t("regKpi")}</div></div>
-    <div class="ys-card"><div class="ys-val" style="color:var(--green)">${done}<sub>개</sub></div><div class="ys-label">달성 완료</div></div>
-    <div class="ys-card"><div class="ys-val" style="color:var(--blue)">${totalLogs}<sub>건</sub></div><div class="ys-label">${t("totalLog")}</div></div>
+    <div class="ys-card"><div class="ys-val">${total}${lang==='ko'?'<sub>개</sub>':''}</div><div class="ys-label">${t("regKpi")}</div></div>
+    <div class="ys-card"><div class="ys-val" style="color:var(--green)">${done}${lang==='ko'?'<sub>개</sub>':''}</div><div class="ys-label">${lang==='ko'?'달성 완료':'Completed'}</div></div>
+    <div class="ys-card"><div class="ys-val" style="color:var(--blue)">${totalLogs}${lang==='ko'?'<sub>건</sub>':''}</div><div class="ys-label">${t("totalLog")}</div></div>
   </div>`;
 
   if(!yrGoals.length){
-    h+=`<div class="no-history" style="padding:30px 0"><div style="font-size:13px;color:var(--mute)">${histYear}년 데이터가 없어요</div></div>`;
+    h+=`<div class="no-history" style="padding:30px 0"><div style="font-size:13px;color:var(--mute)">${histYear}${lang==='ko'?'년 데이터가 없어요':' has no data'}</div></div>`;
     return h+`</div>`;
   }
 
@@ -652,7 +649,7 @@ function renderHistory(){
   </div>`;
 
   // 카테고리별 분류
-  const byCat = CATS.map(c=>({cat:c, items:yrGoals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
+  const byCat = CATS_KO.map(c=>({cat:c, items:yrGoals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
   byCat.forEach(({cat,items})=>{
     const catDone=items.filter(g=>g.current>=g.target).length;
     const catAvg=Math.round(items.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/items.length);
