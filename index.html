@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260524003441 -->
+<!DOCTYPE html><!-- v20260524004016 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -422,15 +422,54 @@ function captureScreen(){
   const btn=document.querySelector('[onclick="captureScreen()"]');
   if(btn) btn.style.opacity='0';
 
-  // main div만 캡처 (헤더, 광고, FAB 제외)
-  const target=document.getElementById('main');
+  // 이력 탭이면 통계+달성률현황 영역만 캡처
+  let target;
+  if(view==='history'){
+    // year-tab-bar + history-main 안의 year-stats + hist-capture-area 를 감싸는 wrapper 생성
+    const yearTab=document.getElementById('year-tab-bar');
+    const histMain=document.getElementById('history-main');
+    const captureArea=document.getElementById('hist-capture-area');
+    if(!histMain||!captureArea){ if(btn) btn.style.opacity='1'; return; }
+
+    const wrapper=document.createElement('div');
+    wrapper.style.cssText='background:#f4f6fb;padding:16px;display:inline-block;min-width:'+histMain.offsetWidth+'px;box-sizing:border-box;';
+    document.body.appendChild(wrapper);
+
+    // 연도 탭 클론
+    if(yearTab){ const c=yearTab.cloneNode(true); c.style.marginBottom='8px'; wrapper.appendChild(c); }
+
+    // year-stats 클론
+    const ys=histMain.querySelector('.year-stats');
+    if(ys){ wrapper.appendChild(ys.cloneNode(true)); }
+
+    // 달성률 현황 카드 클론
+    const ca=captureArea.cloneNode(true);
+    ca.style.marginTop='10px';
+    wrapper.appendChild(ca);
+
+    html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:'#f4f6fb',scrollX:0,scrollY:0})
+    .then(canvas=>{
+      document.body.removeChild(wrapper);
+      const link=document.createElement('a');
+      link.download=`해냄_이력_${today()}.png`;
+      link.href=canvas.toDataURL('image/png');
+      link.click();
+      if(btn) btn.style.opacity='1';
+    }).catch(()=>{
+      if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
+      if(btn) btn.style.opacity='1';
+      alert('캡처에 실패했어요.');
+    });
+    return;
+  }
+
+  // 목록/대시보드: main div 전체 캡처
+  target=document.getElementById('main');
   if(!target){ if(btn) btn.style.opacity='1'; return; }
 
-  // 캡처 전 스크롤 위치 저장 후 최상단으로
   const scrollTop=target.scrollTop;
   target.scrollTop=0;
 
-  // 캡처용 래퍼: 배경색 + 패딩 적용
   const wrapper=document.createElement('div');
   wrapper.style.cssText='background:#f4f6fb;padding:16px;display:inline-block;min-width:'+target.offsetWidth+'px';
   document.body.appendChild(wrapper);
@@ -438,12 +477,8 @@ function captureScreen(){
   clone.style.cssText='position:static;overflow:visible;height:auto;padding-bottom:16px;';
   wrapper.appendChild(clone);
 
-  html2canvas(wrapper,{
-    useCORS:true,
-    scale:2,
-    backgroundColor:'#f4f6fb',
-    scrollX:0, scrollY:0
-  }).then(canvas=>{
+  html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:'#f4f6fb',scrollX:0,scrollY:0})
+  .then(canvas=>{
     document.body.removeChild(wrapper);
     target.scrollTop=scrollTop;
     const link=document.createElement('a');
@@ -456,7 +491,7 @@ function captureScreen(){
     if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
     target.scrollTop=scrollTop;
     if(btn) btn.style.opacity='1';
-    alert('캡처에 실패했어요. 다시 시도해주세요.');
+    alert('캡처에 실패했어요.');
   });
 }
 function switchView(v){
@@ -681,7 +716,7 @@ function renderHistory(){
 
   // 달성률 현황 - 전체현황과 동일한 스타일
   const yrSorted=[...yrGoals].sort((a,b)=>pctVal(b)-pctVal(a));
-  h+=`<div class="section-card" style="margin-bottom:10px">
+  h+=`<div class="section-card" id="hist-capture-area" style="margin-bottom:10px">
     <div class="section-title">${histYear}${t('histChart')}</div>
     ${yrSorted.map((g,i)=>{
       const p=pctVal(g), color=CAT_COLOR[g.category];
