@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260524015155 -->
+<!DOCTYPE html><!-- v20260524015443 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -100,7 +100,7 @@
   .section-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px;border:1px solid var(--border)}
   .section-title{font-size:13px;font-weight:700;color:#888;letter-spacing:0.3px;margin-bottom:12px}
   .cat-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-  .cat-label{font-size:13px;font-weight:700;min-width:36px;max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cat-label{font-size:13px;font-weight:700;width:60px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar-track{flex:1;height:8px;background:#f0f0f0;border-radius:99px;overflow:hidden}
   .bar-fill{height:100%;border-radius:99px}
   .bar-pct{font-size:13px;font-weight:700;color:#555;width:36px;text-align:right}
@@ -562,7 +562,7 @@ function renderDash(){
       <div style="flex:1">${byCat.map(({cat,items})=>{
         const a=Math.round(items.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/items.length);
         return `<div class="cat-row" style="margin-bottom:6px">
-          <div class="cat-label" style="color:${CAT_COLOR[cat]}">${catDisplay(cat)}</div>
+          <div class="cat-label" style="color:${CAT_COLOR[cat]};font-size:${lang==='ko'?'13px':'11px'}">${catDisplay(cat)}</div>
           <div class="bar-track"><div class="bar-fill" style="width:${a}%;background:${CAT_COLOR[cat]}"></div></div>
           <div class="bar-pct">${a}%</div>
         </div>`;
