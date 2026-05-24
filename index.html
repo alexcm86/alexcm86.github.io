@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html><!-- v20260524001449 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -329,7 +329,6 @@ function toggleLang(){
 const CATS_KO=['업무','개인','운동','학습','재무'];
 const CATS_EN=['Work','Personal','Exercise','Study','Finance'];
 const CAT_KO_TO_EN={업무:'Work',개인:'Personal',운동:'Exercise',학습:'Study',재무:'Finance'};
-const CAT_EN_TO_KO={Work:'업무',Personal:'개인',Exercise:'운동',Study:'학습',Finance:'재무'};
 const CATS=CATS_KO;
 function getCats(){return lang==='ko'?CATS_KO:CATS_EN;}
 function catDisplay(c){return lang==='ko'?c:(CAT_KO_TO_EN[c]||c);}
@@ -626,7 +625,7 @@ function renderHistory(){
   </div>`;
 
   if(!yrGoals.length){
-    h+=`<div class="no-history" style="padding:30px 0"><div style="font-size:13px;color:var(--mute)">${histYear}${lang==='ko'?'년 데이터가 없어요':' has no data'}</div></div>`;
+    h+=`<div class="no-history" style="padding:30px 0"><div style="font-size:13px;color:var(--mute)">${histYear}년 데이터가 없어요</div></div>`;
     return h+`</div>`;
   }
 
