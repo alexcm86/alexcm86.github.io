@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260524015829 -->
+<!DOCTYPE html><!-- v20260524020157 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -32,7 +32,7 @@
   body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 
   /* Header */
-  #header{background:linear-gradient(135deg,#1e2960 0%,#2d3a8c 100%);border-bottom:none;padding:0 16px;display:flex;align-items:center;height:calc(56px + var(--safe-top));padding-top:var(--safe-top);gap:10px;flex-shrink:0;z-index:10;box-shadow:0 2px 16px rgba(30,41,96,0.25);}
+  #header{background:linear-gradient(135deg,#1e2960 0%,#2d3a8c 100%);border-bottom:none;padding:0 8px;display:flex;align-items:center;height:calc(56px + var(--safe-top));padding-top:var(--safe-top);gap:5px;flex-shrink:0;z-index:10;box-shadow:0 2px 16px rgba(30,41,96,0.25);}
   .logo{font-weight:800;font-size:15px;letter-spacing:-0.3px;flex-shrink:0;color:#ffffff;white-space:nowrap;}
   .logo span{color:#93c5fd}
   #tabs{display:flex;flex:1;justify-content:center;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;gap:2px}
@@ -222,20 +222,20 @@
     font-family:inherit;cursor:pointer;flex-shrink:0;letter-spacing:0.3px;
     transition:all .15s;
   ">KO</button>
-  <button onclick="exportData()" title="백업" style="
-    padding:0 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+  <button onclick="exportData()" id="btn-export" title="백업" style="
+    padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
     background:transparent;color:#fff;font-size:13px;
     font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
     height:28px;display:flex;align-items:center;justify-content:center;
   ">⬇</button>
-  <label title="복원" style="
-    padding:0 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+  <label id="btn-import" title="복원" style="
+    padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
     background:transparent;color:#fff;font-size:13px;
     cursor:pointer;flex-shrink:0;transition:all .15s;
     height:28px;display:flex;align-items:center;justify-content:center;
   ">⬆<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
-  <button onclick="captureScreen()" title="캡처" style="
-    padding:0 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+  <button onclick="captureScreen()" id="btn-capture" title="캡처" style="
+    padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
     background:transparent;color:#fff;font-size:14px;
     font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
     height:28px;display:flex;align-items:center;justify-content:center;
@@ -327,8 +327,10 @@ function toggleLang(){
   const logo=document.querySelector('.logo');
   if(logo){
     logo.innerHTML=lang==='ko'?'해<span>냄</span>':'DID <span>IT</span>';
-    logo.style.fontSize=lang==='ko'?'15px':'13px';
+    logo.style.fontSize=lang==='ko'?'15px':'11px';
   }
+  const header=document.getElementById('header');
+  if(header) header.style.gap=lang==='ko'?'5px':'4px';
   const tl=T[lang];
   document.getElementById('tab-list').textContent=tl.list;
   document.getElementById('tab-dash').textContent=tl.dash;
