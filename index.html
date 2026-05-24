@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260524001449 -->
+<!DOCTYPE html><!-- v20260524002821 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -8,10 +8,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="해냄">
 <meta name="theme-color" content="#1e2960">
-<link rel="manifest" href="/alexkpi/manifest.json">
-<link rel="apple-touch-icon" href="/alexkpi/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>해냄</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --blue:#4f46e5;--blue-bg:#eef2ff;
@@ -233,6 +234,12 @@
     cursor:pointer;flex-shrink:0;transition:all .15s;
     height:28px;display:flex;align-items:center;justify-content:center;
   ">⬆<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+  <button onclick="captureScreen()" title="캡처" style="
+    padding:0 7px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:14px;
+    font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
+    height:28px;display:flex;align-items:center;justify-content:center;
+  ">📷</button>
 </div>
 
 <div id="main"></div>
@@ -408,6 +415,37 @@ function render(){
   if(view==='list'){applyScale();initDrag();}
   if(view==='dash') drawCharts();
   resetFabTimer();
+}
+
+function captureScreen(){
+  const viewNames={list:'목록',dash:'대시보드',history:'이력'};
+  const btn=document.querySelector('[onclick="captureScreen()"]');
+  if(btn) btn.style.opacity='0';
+  const ad=document.getElementById('ad-banner');
+  const adDisplay=ad?ad.style.display:'';
+  if(ad) ad.style.display='none';
+
+  const target=document.documentElement;
+  html2canvas(target,{
+    useCORS:true,
+    scale:2,
+    backgroundColor:'#f4f6fb',
+    windowWidth:document.documentElement.scrollWidth,
+    windowHeight:document.documentElement.scrollHeight,
+    ignoreElements:el=>el.id==='fab'||el.id==='ad-banner'
+  }).then(canvas=>{
+    const link=document.createElement('a');
+    const name=viewNames[view]||view;
+    link.download=`해냄_${name}_${today()}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    if(btn) btn.style.opacity='1';
+    if(ad) ad.style.display=adDisplay;
+  }).catch(()=>{
+    if(btn) btn.style.opacity='1';
+    if(ad) ad.style.display=adDisplay;
+    alert('캡처에 실패했어요. 다시 시도해주세요.');
+  });
 }
 function switchView(v){
   view=v;
