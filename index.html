@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260524004016 -->
+<!DOCTYPE html><!-- v20260524015155 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -33,7 +33,7 @@
 
   /* Header */
   #header{background:linear-gradient(135deg,#1e2960 0%,#2d3a8c 100%);border-bottom:none;padding:0 16px;display:flex;align-items:center;height:calc(56px + var(--safe-top));padding-top:var(--safe-top);gap:10px;flex-shrink:0;z-index:10;box-shadow:0 2px 16px rgba(30,41,96,0.25);}
-  .logo{font-weight:800;font-size:15px;letter-spacing:-0.3px;flex:1;color:#ffffff}
+  .logo{font-weight:800;font-size:15px;letter-spacing:-0.3px;flex:1;color:#ffffff;white-space:nowrap;overflow:hidden;}
   .logo span{color:#93c5fd}
   #tabs{display:flex;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;gap:2px}
   .tab-btn{padding:4px 9px;border-radius:7px;border:none;font-size:11px;font-weight:600;font-family:inherit;background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;transition:all .15s}
@@ -100,7 +100,7 @@
   .section-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px;border:1px solid var(--border)}
   .section-title{font-size:13px;font-weight:700;color:#888;letter-spacing:0.3px;margin-bottom:12px}
   .cat-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-  .cat-label{font-size:13px;font-weight:700;width:36px}
+  .cat-label{font-size:13px;font-weight:700;min-width:36px;max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar-track{flex:1;height:8px;background:#f0f0f0;border-radius:99px;overflow:hidden}
   .bar-fill{height:100%;border-radius:99px}
   .bar-pct{font-size:13px;font-weight:700;color:#555;width:36px;text-align:right}
@@ -325,7 +325,10 @@ function toggleLang(){
   const btn=document.getElementById('lang-btn');
   if(btn) btn.textContent=lang==='ko'?'KO':'EN';
   const logo=document.querySelector('.logo');
-  if(logo) logo.innerHTML=lang==='ko'?'해<span>냄</span>':'DID <span>IT</span>';
+  if(logo){
+    logo.innerHTML=lang==='ko'?'해<span>냄</span>':'DID <span>IT</span>';
+    logo.style.fontSize=lang==='ko'?'15px':'13px';
+  }
   const tl=T[lang];
   document.getElementById('tab-list').textContent=tl.list;
   document.getElementById('tab-dash').textContent=tl.dash;
