@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260524120834 -->
+<!DOCTYPE html><!-- v20260524121210 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -448,8 +448,8 @@ function render(){
   if(view==='list'){applyScale();initDrag();}
   if(view==='dash') drawCharts();
   // todo/dash/history 탭에서는 FAB 숨기기
-  if(view==='list') resetFabTimer();
-  else { fab.classList.add('hidden'); clearTimeout(fabTimer); }
+  if(view==='list'){ fab.style.display='flex'; resetFabTimer(); }
+  else { fab.style.display='none'; clearTimeout(fabTimer); }
 }
 
 
