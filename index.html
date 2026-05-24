@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260524002821 -->
+<!DOCTYPE html><!-- v20260524003441 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -421,29 +421,41 @@ function captureScreen(){
   const viewNames={list:'목록',dash:'대시보드',history:'이력'};
   const btn=document.querySelector('[onclick="captureScreen()"]');
   if(btn) btn.style.opacity='0';
-  const ad=document.getElementById('ad-banner');
-  const adDisplay=ad?ad.style.display:'';
-  if(ad) ad.style.display='none';
 
-  const target=document.documentElement;
-  html2canvas(target,{
+  // main div만 캡처 (헤더, 광고, FAB 제외)
+  const target=document.getElementById('main');
+  if(!target){ if(btn) btn.style.opacity='1'; return; }
+
+  // 캡처 전 스크롤 위치 저장 후 최상단으로
+  const scrollTop=target.scrollTop;
+  target.scrollTop=0;
+
+  // 캡처용 래퍼: 배경색 + 패딩 적용
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='background:#f4f6fb;padding:16px;display:inline-block;min-width:'+target.offsetWidth+'px';
+  document.body.appendChild(wrapper);
+  const clone=target.cloneNode(true);
+  clone.style.cssText='position:static;overflow:visible;height:auto;padding-bottom:16px;';
+  wrapper.appendChild(clone);
+
+  html2canvas(wrapper,{
     useCORS:true,
     scale:2,
     backgroundColor:'#f4f6fb',
-    windowWidth:document.documentElement.scrollWidth,
-    windowHeight:document.documentElement.scrollHeight,
-    ignoreElements:el=>el.id==='fab'||el.id==='ad-banner'
+    scrollX:0, scrollY:0
   }).then(canvas=>{
+    document.body.removeChild(wrapper);
+    target.scrollTop=scrollTop;
     const link=document.createElement('a');
     const name=viewNames[view]||view;
     link.download=`해냄_${name}_${today()}.png`;
     link.href=canvas.toDataURL('image/png');
     link.click();
     if(btn) btn.style.opacity='1';
-    if(ad) ad.style.display=adDisplay;
   }).catch(()=>{
+    if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
+    target.scrollTop=scrollTop;
     if(btn) btn.style.opacity='1';
-    if(ad) ad.style.display=adDisplay;
     alert('캡처에 실패했어요. 다시 시도해주세요.');
   });
 }
