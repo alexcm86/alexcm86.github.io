@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260524115352 -->
+<!DOCTYPE html><!-- v20260524115631 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -497,12 +497,7 @@ function renderTodo(){
     <input class="todo-input" id="todo-input" type="text" placeholder="${lang==='ko'?'오늘 할일 입력...':'Add a task for today...'}" onkeydown="if(event.key==='Enter')addTodo()">
     <button class="todo-add-btn" onclick="addTodo()">${lang==='ko'?'추가':'Add'}</button>
   </div>`;
-  if(goals.length>0){
-    h+=`<select class="todo-kpi-select" id="todo-kpi-select">
-      <option value="">${lang==='ko'?'🔗 KPI 연결 (선택)':'🔗 Link to KPI (optional)'}</option>
-      ${kpiOptions}
-    </select>`;
-  }
+
 
   const todayItems=dateMap[todayStr]||[];
   const pending=todayItems.filter(td=>!td.done);
