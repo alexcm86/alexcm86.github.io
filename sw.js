@@ -1,5 +1,5 @@
-// v5 - 캐시 완전 초기화
-const CACHE = 'kpi-v12';
+// v6 - 디자인 업데이트
+const CACHE = 'kpi-v14';
 const FILES = ['/alexkpi/', '/alexkpi/index.html', '/alexkpi/manifest.json', '/alexkpi/icon-192.png', '/alexkpi/icon-512.png'];
 
 self.addEventListener('install', e => {
