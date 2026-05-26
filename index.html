@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526072349 -->
+<!DOCTYPE html><!-- v20260526074530 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -614,10 +614,10 @@ function deleteTodo(id){
 function applyTheme(t){
   theme=t;
   document.body.className=t==='peach'?'theme-peach':'';
-  // 테마 버튼 업데이트
   const btn=document.getElementById('theme-btn');
   if(btn) btn.textContent=t==='peach'?'🌸':'🎨';
   save();
+  render();
 }
 function toggleTheme(){
   applyTheme(theme==='peach'?'default':'peach');
