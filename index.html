@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526123434 -->
+<!DOCTYPE html><!-- v20260526124039 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1241,16 +1241,16 @@ function openHist(id){
   } else {
     logsCopy.forEach(function(item){
       const l=item.l, i=item.i;
-      rows+='<div style="display:flex;align-items:center;gap:6px;padding:9px 0;border-bottom:1px solid #f3f3f3">'
-        +'<div style="flex:1;min-width:0">'
-        +'<div style="display:flex;align-items:center;gap:6px">'
-        +'<div class="hist-date">'+l.date+'</div>'
-        +'<div class="hist-val" style="background:'+bg+';color:'+color+'">+'+fmt(l.value)+' '+esc(g.unit)+'</div>'
+      rows+='<div style="padding:8px 0;border-bottom:1px solid #f3f3f3">'
+        +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'
+        +'<span style="font-size:11px;color:#aaa;flex-shrink:0">'+l.date+'</span>'
+        +'<span class="hist-val" style="background:'+bg+';color:'+color+'">+'+fmt(l.value)+' '+esc(g.unit)+'</span>'
+        +(l.note?'<span style="font-size:11px;color:#999">'+esc(l.note)+'</span>':'')
         +'</div>'
-        +(l.note?'<div class="hist-note">'+esc(l.note)+'</div>':'')
+        +'<div style="display:flex;gap:6px">'
+        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hedit-btn" style="flex:1;padding:5px 0;border:1px solid #ddd;border-radius:8px;background:#fafafa;color:#555;cursor:pointer;font-size:12px">✏️ 수정</button>'
+        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hdel-btn" style="flex:1;padding:5px 0;border:1px solid #fcc;border-radius:8px;background:#fff5f5;color:#e44;cursor:pointer;font-size:12px">🗑️ 삭제</button>'
         +'</div>'
-        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hedit-btn" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#555;cursor:pointer;flex-shrink:0">수정</button>'
-        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hdel-btn" style="font-size:11px;padding:3px 8px;border:1px solid var(--red);border-radius:6px;background:#fff5f5;color:var(--red);cursor:pointer;flex-shrink:0">삭제</button>'
         +'</div>';
     });
   }
