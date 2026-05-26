@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526074530 -->
+<!DOCTYPE html><!-- v20260526074733 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -397,8 +397,7 @@ const CAT_COLOR_PEACH={업무:'#c084a0',개인:'#e07a8f',운동:'#6db88a',학습
 const CAT_BG_PEACH={업무:'#fce8f0',개인:'#ffe8ec',운동:'#e8f7ee',학습:'#fdf0e4',재무:'#ffe8e8'};
 function getCAT_COLOR(){return theme==='peach'?CAT_COLOR_PEACH:CAT_COLOR_DEFAULT;}
 function getCAT_BG(){return theme==='peach'?CAT_BG_PEACH:CAT_BG_DEFAULT;}
-const CAT_COLOR=new Proxy({},{get:(t,k)=>getCAT_COLOR()[k]});
-const CAT_BG=new Proxy({},{get:(t,k)=>getCAT_BG()[k]});
+// CAT_COLOR/CAT_BG는 렌더 시점에 getCAT_COLOR()/getCAT_BG()로 직접 호출
 
 let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='default';
 let cardScale=100;
@@ -766,10 +765,10 @@ function renderDash(){
         const a=Math.round(items.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/items.length);
         return `<div class="cat-row" style="margin-bottom:6px">
           ${lang==='ko'
-            ? `<div class="cat-label" style="color:${CAT_COLOR[cat]}">${catDisplay(cat)}</div>`
-            : `<div style="width:8px;height:8px;border-radius:50%;background:${CAT_COLOR[cat]};flex-shrink:0"></div><div style="font-size:10px;font-weight:700;color:${CAT_COLOR[cat]};width:52px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${catDisplay(cat)}</div>`
+            ? `<div class="cat-label" style="color:${getCAT_COLOR()[cat]}">${catDisplay(cat)}</div>`
+            : `<div style="width:8px;height:8px;border-radius:50%;background:${getCAT_COLOR()[cat]};flex-shrink:0"></div><div style="font-size:10px;font-weight:700;color:${getCAT_COLOR()[cat]};width:52px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${catDisplay(cat)}</div>`
           }
-          <div class="bar-track"><div class="bar-fill" style="width:${a}%;background:${CAT_COLOR[cat]}"></div></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${a}%;background:${getCAT_COLOR()[cat]}"></div></div>
           <div class="bar-pct">${a}%</div>
         </div>`;
       }).join('')}</div>
@@ -780,7 +779,7 @@ function renderDash(){
   h+=`<div class="section-card">
     <div class="section-title">🏆 달성률 전체 순위</div>`;
   sorted.forEach((g,i)=>{
-    const p=pctVal(g), color=CAT_COLOR[g.category];
+    const p=pctVal(g), color=getCAT_COLOR()[g.category];
     const medals=['🥇','🥈','🥉'];
     const rank=i<3?medals[i]:`<span style="font-size:12px;font-weight:800;color:var(--mute)">${i+1}</span>`;
     h+=`<div class="cat-row">
@@ -797,7 +796,7 @@ function renderDash(){
   if(urgent.length){
     h+=`<div class="section-card"><div class="section-title">⏰ 마감 임박</div>`;
     urgent.slice(0,4).forEach(g=>{
-      const color=CAT_COLOR[g.category], col=g.diff<7?'#dc2626':'#d97706';
+      const color=getCAT_COLOR()[g.category], col=g.diff<7?'#dc2626':'#d97706';
       h+=`<div class="cat-row">
         <div style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0"></div>
         <div style="flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(g.title)}</div>
@@ -833,7 +832,7 @@ function drawDonut(){
     ctx.moveTo(cx,cy);
     ctx.arc(cx,cy,outerR,startAngle,startAngle+slice);
     ctx.closePath();
-    ctx.fillStyle=CAT_COLOR[cat];
+    ctx.fillStyle=getCAT_COLOR()[cat];
     ctx.fill();
     startAngle+=slice;
   });
@@ -928,7 +927,7 @@ function renderHistory(){
   h+=`<div class="section-card" id="hist-capture-area" style="margin-bottom:10px">
     <div class="section-title">${histYear}${t('histChart')}</div>
     ${yrSorted.map((g,i)=>{
-      const p=pctVal(g), color=CAT_COLOR[g.category];
+      const p=pctVal(g), color=getCAT_COLOR()[g.category];
       const medals=['🥇','🥈','🥉'];
       const rank=i<3?medals[i]:`<span style="font-size:12px;font-weight:800;color:var(--mute)">${i+1}</span>`;
       return `<div class="cat-row">
@@ -948,13 +947,13 @@ function renderHistory(){
     const catAvg=Math.round(items.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/items.length);
     h+=`<div style="margin-bottom:14px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <div style="width:8px;height:8px;border-radius:50%;background:${CAT_COLOR[cat]};flex-shrink:0"></div>
-        <div style="font-size:12px;font-weight:800;color:${CAT_COLOR[cat]}">${cat}</div>
+        <div style="width:8px;height:8px;border-radius:50%;background:${getCAT_COLOR()[cat]};flex-shrink:0"></div>
+        <div style="font-size:12px;font-weight:800;color:${getCAT_COLOR()[cat]}">${cat}</div>
         <div style="font-size:10px;color:var(--sub);margin-left:auto">${catDone}/${items.length}개 달성 · 평균 ${catAvg}%</div>
       </div>`;
     items.sort((a,b)=>pctVal(b)-pctVal(a)).forEach(g=>{
       const p=pctVal(g), disp=Math.min(100,p);
-      const color=CAT_COLOR[g.category], bg=CAT_BG[g.category];
+      const color=getCAT_COLOR()[g.category], bg=getCAT_BG()[g.category];
       const yrGoalLogs=(g.logs||[]).filter(l=>(l.date||'').slice(0,4)===histYear);
       const gid='hg-'+g.id;
       h+=`<div class="hist-goal-card">
@@ -1020,7 +1019,7 @@ function toggleHistGoal(id){
 /* ── Card ── */
 function renderCard(g){
   const p=pctVal(g), dispPct=Math.min(100,p);
-  const color=CAT_COLOR[g.category], bg=CAT_BG[g.category];
+  const color=getCAT_COLOR()[g.category], bg=getCAT_BG()[g.category];
   const done=p>=100;
   let dday='';
   if(g.deadline){
@@ -1200,7 +1199,7 @@ function saveLog(id){
 }
 function openHist(id){
   const g=goals.find(x=>x.id===id);
-  const color=CAT_COLOR[g.category],bg=CAT_BG[g.category];
+  const color=getCAT_COLOR()[g.category],bg=getCAT_BG()[g.category];
   const rows=g.logs.length
     ?[...g.logs].reverse().map(l=>`<div class="hist-item">
         <div class="hist-date">${l.date}</div>
