@@ -1,5 +1,5 @@
-// v13 - 시작일기능
-const CACHE = 'kpi-v21';
+// v14 - 시작일UI수정
+const CACHE = 'kpi-v22';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
