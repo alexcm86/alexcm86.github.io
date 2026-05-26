@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526095347 -->
+<!DOCTYPE html><!-- v20260526083516 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -36,13 +36,13 @@
   }
   /* 피치 테마 */
   body.theme-peach{
-    --bg:#fff0f0;--card:#fff8f6;--border:#ffd6cc;
-    --text:#3d1a18;--sub:#a0706b;--mute:#f0c4bb;
-    --shadow:0 4px 20px rgba(220,80,80,0.08);
-    --header-bg:linear-gradient(135deg,#e8735a 0%,#f4a08a 100%);
-    --header-shadow:rgba(232,115,90,0.25);
-    --tab-active-color:#e8735a;
-    --logo-span:#ffe0d6;
+    --bg:#fff8e7;--card:#fffdf5;--border:#fde8b0;
+    --text:#2d1f00;--sub:#8a6e30;--mute:#f0d890;
+    --shadow:0 4px 20px rgba(245,166,35,0.13);
+    --header-bg:linear-gradient(135deg,#e09010 0%,#f5a623 60%,#fbbf24 100%);
+    --header-shadow:rgba(245,166,35,0.35);
+    --tab-active-color:#c47f0a;
+    --logo-span:#fde68a;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased;font-synthesis:none}
@@ -1200,14 +1200,52 @@ function saveLog(id){
   goals[i].logs.push({date:today(),value:val,note});
   save();closeModal();render();
 }
+function editLog(goalId, logIdx){
+  const g=goals.find(x=>x.id===goalId);
+  const l=g.logs[logIdx];
+  showModal(`<div class="modal-title">기록 수정</div>
+    <div style="font-size:12px;color:#888;margin-bottom:14px">${esc(g.title)} · ${l.date}</div>
+    <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">값 (${esc(g.unit)})</label>
+    <input id="editLogVal" type="number" value="${l.value}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;margin-bottom:10px;box-sizing:border-box">
+    <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">메모</label>
+    <input id="editLogNote" type="text" value="${esc(l.note||'')}" placeholder="메모 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:16px;box-sizing:border-box">
+    <button class="btn-full" onclick="
+      const v=parseFloat(document.getElementById('editLogVal').value);
+      const n=document.getElementById('editLogNote').value.trim();
+      if(isNaN(v)||v<0){alert('올바른 값을 입력하세요');return;}
+      const g2=goals.find(x=>x.id==='${goalId}');
+      g2.logs[${logIdx}]={...g2.logs[${logIdx}], value:v, note:n};
+      save();render();closeModal();
+      setTimeout(()=>openHist('${goalId}'),100);
+    ">저장</button>
+    <button class="btn-full" style="background:#f5f5f5;color:var(--text);margin-top:8px" onclick="closeModal();setTimeout(()=>openHist('${goalId}'),100)">취소</button>
+  `);
+}
+
+function delLog(goalId, logIdx){
+  if(!confirm('이 기록을 삭제할까요?')) return;
+  const g=goals.find(x=>x.id===goalId);
+  g.logs.splice(logIdx,1);
+  save();render();
+  setTimeout(()=>openHist(goalId),100);
+}
+
 function openHist(id){
   const g=goals.find(x=>x.id===id);
   const color=getCAT_COLOR()[g.category],bg=getCAT_BG()[g.category];
   const rows=g.logs.length
-    ?[...g.logs].reverse().map(l=>`<div class="hist-item">
-        <div class="hist-date">${l.date}</div>
-        <div class="hist-val" style="background:${bg};color:${color}">+${fmt(l.value)} ${esc(g.unit)}</div>
-        ${l.note?`<div class="hist-note">${esc(l.note)}</div>`:''}
+    ?[...g.logs].map((l,i)=>({l,i})).reverse().map(({l,i})=>`<div class="hist-item" style="align-items:flex-start;gap:6px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+            <div class="hist-date">${l.date}</div>
+            <div class="hist-val" style="background:${bg};color:${color}">+${fmt(l.value)} ${esc(g.unit)}</div>
+          </div>
+          ${l.note?`<div class="hist-note">${esc(l.note)}</div>`:''}
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;padding-top:2px">
+          <button onclick="editLog('${g.id}',${i})" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--sub);cursor:pointer">수정</button>
+          <button onclick="delLog('${g.id}',${i})" style="font-size:11px;padding:3px 8px;border:1px solid var(--red);border-radius:6px;background:#fff5f5;color:var(--red);cursor:pointer">삭제</button>
+        </div>
       </div>`).join('')
     :`<div style="text-align:center;padding:28px 0;color:#ccc;font-size:13px">${t('noLog')}</div>`;
   showModal(`<div class="modal-title">${t("histTitle")}</div>

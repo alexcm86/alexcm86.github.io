@@ -1,5 +1,5 @@
-// v7 - 아이콘 업데이트
-const CACHE = 'kpi-v15';
+// v8 - 히스토리 수정기능
+const CACHE = 'kpi-v16';
 const FILES = ['/alexkpi/', '/alexkpi/index.html', '/alexkpi/manifest.json', '/alexkpi/icon-192.png', '/alexkpi/icon-512.png'];
 
 self.addEventListener('install', e => {
