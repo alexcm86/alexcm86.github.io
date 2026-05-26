@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526082906 -->
+<!DOCTYPE html><!-- v20260526083516 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1224,7 +1224,7 @@ function showModal(html,sheet=false){
 function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/alexkpi/sw.js').catch(()=>{}));
 }
 
 load();
