@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260524121210 -->
+<!DOCTYPE html><!-- v20260526064931 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -24,20 +24,34 @@
     --bg:#f0f2f8;--card:#ffffff;--border:#e4e7f0;
     --text:#1a1d2e;--sub:#6b7280;--mute:#c4c9d8;
     --shadow:0 2px 12px rgba(79,70,229,0.08);
+    --header-bg:linear-gradient(135deg,#1e2960 0%,#2d3a8c 100%);
+    --header-shadow:rgba(30,41,96,0.25);
+    --tab-active-color:#1e2960;
+    --logo-span:#93c5fd;
     --safe-top:env(safe-area-inset-top,0px);
     --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  /* 피치 테마 */
+  body.theme-peach{
+    --bg:#fff0f0;--card:#fff8f6;--border:#ffd6cc;
+    --text:#3d1a18;--sub:#a0706b;--mute:#f0c4bb;
+    --shadow:0 2px 12px rgba(220,80,80,0.08);
+    --header-bg:linear-gradient(135deg,#e8735a 0%,#f4a08a 100%);
+    --header-shadow:rgba(232,115,90,0.25);
+    --tab-active-color:#e8735a;
+    --logo-span:#ffe0d6;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden}
   body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
 
   /* Header */
-  #header{background:linear-gradient(135deg,#1e2960 0%,#2d3a8c 100%);border-bottom:none;padding:0 8px;display:flex;align-items:center;height:calc(56px + var(--safe-top));padding-top:var(--safe-top);gap:5px;flex-shrink:0;z-index:10;box-shadow:0 2px 16px rgba(30,41,96,0.25);}
+  #header{background:var(--header-bg);border-bottom:none;padding:0 8px;display:flex;align-items:center;height:calc(56px + var(--safe-top));padding-top:var(--safe-top);gap:5px;flex-shrink:0;z-index:10;box-shadow:0 2px 16px var(--header-shadow);}
   .logo{font-weight:800;font-size:15px;letter-spacing:-0.3px;flex-shrink:0;color:#ffffff;white-space:nowrap;}
-  .logo span{color:#93c5fd}
+  .logo span{color:var(--logo-span)}
   #tabs{display:flex;flex:1;justify-content:center;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px;gap:1px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}#tabs::-webkit-scrollbar{display:none;}
   .tab-btn{padding:4px 8px;border-radius:7px;border:none;font-size:10px;font-weight:600;font-family:inherit;background:transparent;color:rgba(255,255,255,0.55);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;}
-  .tab-btn.active{background:#ffffff;color:#1e2960;box-shadow:0 1px 6px rgba(0,0,0,0.15);font-weight:700}
+  .tab-btn.active{background:#ffffff;color:var(--tab-active-color);box-shadow:0 1px 6px rgba(0,0,0,0.15);font-weight:700}
 
 
   /* Todo */
@@ -258,6 +272,12 @@
     cursor:pointer;flex-shrink:0;transition:all .15s;
     height:28px;display:flex;align-items:center;justify-content:center;
   ">⬆<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+  <button onclick="toggleTheme()" id="theme-btn" title="테마" style="
+    padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:14px;
+    font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
+    height:28px;display:flex;align-items:center;justify-content:center;
+  ">🎨</button>
   <button onclick="captureScreen()" id="btn-capture" title="캡처" style="
     padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
     background:transparent;color:#fff;font-size:14px;
@@ -374,7 +394,7 @@ function catDisplay(c){return lang==='ko'?c:(CAT_KO_TO_EN[c]||c);}
 const CAT_COLOR={업무:'#4f46e5',개인:'#7c3aed',운동:'#059669',학습:'#d97706',재무:'#e11d48'};
 const CAT_BG={업무:'#eef2ff',개인:'#f5f3ff',운동:'#ecfdf5',학습:'#fffbeb',재무:'#fff1f2'};
 
-let goals=[], todos=[], view='list', filter='전체', sortMode='pct';
+let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='default';
 let cardScale=100;
 const SCALE_STEP=5, SCALE_MIN=40, SCALE_MAX=100;
 
@@ -399,11 +419,11 @@ function fmt(n){
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(STORAGE_KEY));
-    goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko';
+    goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'default'; applyTheme(theme);
 
   }catch{goals=[];cardScale=100;}
 }
-function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang}));}catch(e){console.warn(T[lang].saveFail,e);}}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
 function exportData(){
   const data=JSON.stringify({goals,scale:cardScale,lang},null,2);
   const blob=new Blob([data],{type:'application/json'});
@@ -582,6 +602,19 @@ function deleteTodo(id){
   if(!confirm(lang==='ko'?'삭제할까요?':'Delete this task?')) return;
   todos=todos.filter(t=>t.id!==id);
   save();render();
+}
+
+
+function applyTheme(t){
+  theme=t;
+  document.body.className=t==='peach'?'theme-peach':'';
+  // 테마 버튼 업데이트
+  const btn=document.getElementById('theme-btn');
+  if(btn) btn.textContent=t==='peach'?'🌸':'🎨';
+  save();
+}
+function toggleTheme(){
+  applyTheme(theme==='peach'?'default':'peach');
 }
 
 function captureScreen(){
