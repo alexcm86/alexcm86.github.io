@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526222847 -->
+<!DOCTYPE html><!-- v20260526230016 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -416,8 +416,22 @@ const CAT_COLOR_DEFAULT={업무:'#4f46e5',개인:'#7c3aed',운동:'#059669',학�
 const CAT_BG_DEFAULT={업무:'#eef2ff',개인:'#f5f3ff',운동:'#ecfdf5',학습:'#fffbeb',재무:'#fff1f2'};
 const CAT_COLOR_PEACH={업무:'#c084a0',개인:'#e07a8f',운동:'#6db88a',학습:'#f4845f',재무:'#e06060'};
 const CAT_BG_PEACH={업무:'#fce8f0',개인:'#ffe8ec',운동:'#e8f7ee',학습:'#fff0eb',재무:'#ffe8e8'};
-function getCAT_COLOR(){return theme==='peach'?CAT_COLOR_PEACH:CAT_COLOR_DEFAULT;}
-function getCAT_BG(){return theme==='peach'?CAT_BG_PEACH:CAT_BG_DEFAULT;}
+const CAT_COLOR_DARK={업무:'#818cf8',개인:'#a78bfa',운동:'#34d399',학습:'#fbbf24',재무:'#fb7185'};
+const CAT_BG_DARK={업무:'#1e2050',개인:'#2d1f5e',운동:'#064e3b',학습:'#451a03',재무:'#4c0519'};
+const CAT_COLOR_FOREST={업무:'#6366f1',개인:'#8b5cf6',운동:'#059669',학습:'#d97706',재무:'#e11d48'};
+const CAT_BG_FOREST={업무:'#e8e9ff',개인:'#f0ebff',운동:'#d1fae5',학습:'#fef3c7',재무:'#ffe4e6'};
+function getCAT_COLOR(){
+  if(theme==='peach') return CAT_COLOR_PEACH;
+  if(theme==='dark')  return CAT_COLOR_DARK;
+  if(theme==='forest') return CAT_COLOR_FOREST;
+  return CAT_COLOR_DEFAULT;
+}
+function getCAT_BG(){
+  if(theme==='peach') return CAT_BG_PEACH;
+  if(theme==='dark')  return CAT_BG_DARK;
+  if(theme==='forest') return CAT_BG_FOREST;
+  return CAT_BG_DEFAULT;
+}
 // CAT_COLOR/CAT_BG는 렌더 시점에 getCAT_COLOR()/getCAT_BG()로 직접 호출
 
 let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='default';
@@ -1215,8 +1229,8 @@ function saveLog(id){
   if(!val) return;
   const note=document.getElementById('l-note').value.trim();
   const i=goals.findIndex(x=>x.id===id);
-  goals[i].current=Math.max(0,goals[i].current+val);
   goals[i].logs.push({date:today(),value:val,note});
+  goals[i].current=goals[i].logs.reduce(function(s,l){return s+l.value;},0);
   save();closeModal();render();
 }
 function editLog(gid,idx){
@@ -1283,10 +1297,12 @@ function openHist(id){
   setTimeout(function(){
     var hc=document.getElementById('histClose');
     if(hc) hc.onclick=closeModal;
-    document.querySelectorAll('.hedit-btn').forEach(function(btn){
+    const modalEl=document.getElementById('modal-ov');
+    if(!modalEl) return;
+    modalEl.querySelectorAll('.hedit-btn').forEach(function(btn){
       btn.onclick=function(){editLog(btn.dataset.gid,parseInt(btn.dataset.idx));};
     });
-    document.querySelectorAll('.hdel-btn').forEach(function(btn){
+    modalEl.querySelectorAll('.hdel-btn').forEach(function(btn){
       btn.onclick=function(){delLog(btn.dataset.gid,parseInt(btn.dataset.idx));};
     });
   },50);
