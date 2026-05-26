@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526130246 -->
+<!DOCTYPE html><!-- v20260526131434 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -43,6 +43,15 @@
     --header-shadow:rgba(245,166,35,0.35);
     --tab-active-color:#c47f0a;
     --logo-span:#fde68a;
+  }
+  body.theme-dark{
+    --bg:#0d1117;--card:#161b22;--border:#30363d;
+    --text:#e6edf3;--sub:#8b949e;--mute:#3d444d;
+    --shadow:0 4px 24px rgba(0,0,0,0.5);
+    --header-bg:linear-gradient(135deg,#1a2332 0%,#0d1117 100%);
+    --header-shadow:rgba(0,0,0,0.6);
+    --tab-active-color:#58a6ff;
+    --logo-span:#58a6ff;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased;font-synthesis:none}
@@ -615,14 +624,15 @@ function deleteTodo(id){
 
 function applyTheme(t){
   theme=t;
-  document.body.className=t==='peach'?'theme-peach':'';
+  document.body.className=t==='peach'?'theme-peach':t==='dark'?'theme-dark':'';
   const btn=document.getElementById('theme-btn');
-  if(btn) btn.textContent=t==='peach'?'🌸':'🎨';
+  if(btn) btn.textContent=t==='peach'?'🌸':t==='dark'?'🌙':'🎨';
   save();
   render();
 }
 function toggleTheme(){
-  applyTheme(theme==='peach'?'default':'peach');
+  const next=theme==='default'?'peach':theme==='peach'?'dark':'default';
+  applyTheme(next);
 }
 
 function captureScreen(){
