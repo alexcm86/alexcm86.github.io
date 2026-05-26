@@ -1,5 +1,5 @@
-// v15 - 시작일다국어
-const CACHE = 'kpi-v23';
+// v16 - startLbl다국어수정
+const CACHE = 'kpi-v24';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
