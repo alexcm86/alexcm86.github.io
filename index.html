@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526230016 -->
+<!DOCTYPE html><!-- v20260526231431 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1058,7 +1058,12 @@ function renderCard(g){
   const color=getCAT_COLOR()[g.category], bg=getCAT_BG()[g.category];
   const done=p>=100;
   let dday='';
-  if(g.deadline){
+  const todayStr=today();
+  // 시작일이 미래면 "N일 후 시작" 표시
+  if(g.startAt && g.startAt > todayStr){
+    const startDiff=Math.ceil((new Date(g.startAt)-new Date())/86400000);
+    dday=`<span style="font-size:var(--fsXS,9px);color:#6366f1">D-${startDiff} 시작</span>`;
+  } else if(g.deadline){
     const diff=Math.ceil((new Date(g.deadline)-new Date())/86400000);
     const col=diff<7?'#dc2626':'#aaa';
     dday=`<span style="font-size:var(--fsXS,9px);color:${col}">${diff>0?'D-'+diff:diff===0?'오늘':'D+'+Math.abs(diff)}</span>`;
@@ -1151,6 +1156,10 @@ function openAddModal(){
       <div><label>${t("targetLbl")}</label><input id="f-target" type="number" placeholder="100" oninput="chkSave()"></div>
       <div><label>${t("deadlineLbl")}</label><input id="f-deadline" type="date"></div>
     </div>
+    <div class="row2">
+      <div><label>${t("startLbl")}</label><input id="f-start" type="date"></div>
+      <div></div>
+    </div>
     <label>${t("noteLbl")}</label><textarea id="f-note" placeholder="${t('notePh')}"></textarea>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">${t("cancel")}</button>
@@ -1171,6 +1180,7 @@ function saveAdd(){
     target:Number(document.getElementById('f-target').value),
     deadline:document.getElementById('f-deadline').value,
     note:document.getElementById('f-note').value.trim(),
+    startAt:document.getElementById('f-start').value||today(),
     current:0,logs:[],createdAt:today()
   });
   save();closeModal();render();
@@ -1188,6 +1198,10 @@ function openEdit(id){
       <div><label>목표 수치 *</label><input id="f-target" type="number" value="${g.target}"></div>
       <div><label>마감일</label><input id="f-deadline" type="date" value="${g.deadline||''}"></div>
     </div>
+    <div class="row2">
+      <div><label>${t('startLbl')}</label><input id="f-start" type="date" value="${g.startAt||''}"></div>
+      <div></div>
+    </div>
     <label>메모</label><textarea id="f-note">${esc(g.note||"")}</textarea>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">${t("cancel")}</button>
@@ -1202,6 +1216,7 @@ function saveEdit(id){
     unit:document.getElementById('f-unit').value.trim(),
     target:Number(document.getElementById('f-target').value),
     deadline:document.getElementById('f-deadline').value,
+    startAt:document.getElementById('f-start').value||goals[i].startAt||today(),
     note:document.getElementById('f-note').value.trim()
   };
   save();closeModal();render();
