@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526124039 -->
+<!DOCTYPE html><!-- v20260526125432 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1217,6 +1217,7 @@ function editLog(gid,idx){
     const n=document.getElementById('eln').value.trim();
     if(isNaN(v)||v<0){alert('올바른 값을 입력하세요');return;}
     g.logs[idx]={date:g.logs[idx].date,value:v,note:n};
+    g.current=g.logs.reduce(function(s,l){return s+l.value;},0);
     save();render();closeModal();
     setTimeout(function(){openHist(gid);},150);
   };
@@ -1228,6 +1229,7 @@ function delLog(gid,idx){
   if(!confirm('이 기록을 삭제할까요?'))return;
   const g=goals.find(x=>x.id===gid);
   g.logs.splice(idx,1);
+  g.current=g.logs.reduce(function(s,l){return s+l.value;},0);
   save();render();closeModal();
   setTimeout(function(){openHist(gid);},150);
 }
