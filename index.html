@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526074733 -->
+<!DOCTYPE html><!-- v20260526082906 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -393,8 +393,8 @@ function getCats(){return lang==='ko'?CATS_KO:CATS_EN;}
 function catDisplay(c){return lang==='ko'?c:(CAT_KO_TO_EN[c]||c);}
 const CAT_COLOR_DEFAULT={업무:'#4f46e5',개인:'#7c3aed',운동:'#059669',학습:'#d97706',재무:'#e11d48'};
 const CAT_BG_DEFAULT={업무:'#eef2ff',개인:'#f5f3ff',운동:'#ecfdf5',학습:'#fffbeb',재무:'#fff1f2'};
-const CAT_COLOR_PEACH={업무:'#c084a0',개인:'#e07a8f',운동:'#6db88a',학습:'#d4955a',재무:'#e06060'};
-const CAT_BG_PEACH={업무:'#fce8f0',개인:'#ffe8ec',운동:'#e8f7ee',학습:'#fdf0e4',재무:'#ffe8e8'};
+const CAT_COLOR_PEACH={업무:'#c084a0',개인:'#e07a8f',운동:'#6db88a',학습:'#f4845f',재무:'#e06060'};
+const CAT_BG_PEACH={업무:'#fce8f0',개인:'#ffe8ec',운동:'#e8f7ee',학습:'#fff0eb',재무:'#ffe8e8'};
 function getCAT_COLOR(){return theme==='peach'?CAT_COLOR_PEACH:CAT_COLOR_DEFAULT;}
 function getCAT_BG(){return theme==='peach'?CAT_BG_PEACH:CAT_BG_DEFAULT;}
 // CAT_COLOR/CAT_BG는 렌더 시점에 getCAT_COLOR()/getCAT_BG()로 직접 호출
