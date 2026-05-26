@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526122952 -->
+<!DOCTYPE html><!-- v20260526123250 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1200,72 +1200,62 @@ function saveLog(id){
   goals[i].logs.push({date:today(),value:val,note});
   save();closeModal();render();
 }
-function editLog(gid,idx){
-  const g=goals.find(x=>x.id===gid);
-  const l=g.logs[idx];
-  showModal(`<div class="modal-title">기록 수정</div>
-    <div style="font-size:12px;color:#888;margin-bottom:14px">${esc(g.title)} · ${l.date}</div>
-    <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">값 (${esc(g.unit)})</label>
-    <input id="elv" type="number" value="${l.value}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;margin-bottom:10px;box-sizing:border-box">
-    <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">메모</label>
-    <input id="eln" type="text" value="${esc(l.note||'')}" placeholder="메모 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:16px;box-sizing:border-box">
-    <button class="btn-full" id="elSave">저장</button>
-    <button class="btn-full" style="background:#f5f5f5;color:var(--text);margin-top:8px" id="elCancel">취소</button>
-  `);
-  document.getElementById('elSave').onclick=function(){
-    const v=parseFloat(document.getElementById('elv').value);
-    const n=document.getElementById('eln').value.trim();
-    if(isNaN(v)||v<0){alert('올바른 값을 입력하세요');return;}
-    g.logs[idx]={date:g.logs[idx].date,value:v,note:n};
-    save();render();closeModal();
-    setTimeout(function(){openHist(gid);},150);
-  };
-  document.getElementById('elCancel').onclick=function(){
-    closeModal();setTimeout(function(){openHist(gid);},150);
-  };
-}
-function delLog(gid,idx){
-  if(!confirm('이 기록을 삭제할까요?'))return;
-  const g=goals.find(x=>x.id===gid);
-  g.logs.splice(idx,1);
-  save();render();closeModal();
-  setTimeout(function(){openHist(gid);},150);
-}
 function openHist(id){
   const g=goals.find(x=>x.id===id);
   const color=getCAT_COLOR()[g.category],bg=getCAT_BG()[g.category];
-  const logsCopy=[...g.logs].map(function(l,i){return {l:l,i:i};}).reverse();
   let rows='';
-  if(logsCopy.length===0){
+  if(!g.logs.length){
     rows='<div style="text-align:center;padding:28px 0;color:#ccc;font-size:13px">'+t('noLog')+'</div>';
   } else {
-    logsCopy.forEach(function(item){
-      const l=item.l, i=item.i;
-      rows+='<div style="display:flex;align-items:center;gap:6px;padding:9px 0;border-bottom:1px solid #f3f3f3">'
-        +'<div style="flex:1;min-width:0">'
-        +'<div style="display:flex;align-items:center;gap:6px">'
-        +'<div class="hist-date">'+l.date+'</div>'
-        +'<div class="hist-val" style="background:'+bg+';color:'+color+'">+'+fmt(l.value)+' '+esc(g.unit)+'</div>'
-        +'</div>'
-        +(l.note?'<div class="hist-note">'+esc(l.note)+'</div>':'')
-        +'</div>'
-        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hedit-btn" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#555;cursor:pointer;flex-shrink:0">수정</button>'
-        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hdel-btn" style="font-size:11px;padding:3px 8px;border:1px solid var(--red);border-radius:6px;background:#fff5f5;color:var(--red);cursor:pointer;flex-shrink:0">삭제</button>'
+    const rev=[...g.logs].map((l,i)=>({l,i})).reverse();
+    rev.forEach(({l,i})=>{
+      rows+='<div style="display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid #f3f3f3">'
+        +'<div style="flex:1"><div style="display:flex;align-items:center;gap:6px">'
+        +'<span style="font-size:11px;color:#aaa;min-width:78px">'+l.date+'</span>'
+        +'<span class="hist-val" style="background:'+bg+';color:'+color+'">+'+fmt(l.value)+' '+esc(g.unit)+'</span>'
+        +'</div>'+(l.note?'<div class="hist-note">'+esc(l.note)+'</div>':'')+'</div>'
+        +'<button data-gi="'+g.id+'" data-li="'+i+'" class="heb" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#555;cursor:pointer">수정</button>'
+        +'<button data-gi="'+g.id+'" data-li="'+i+'" class="hdb" style="font-size:11px;padding:3px 8px;border:1px solid #e44;border-radius:6px;background:#fff5f5;color:#e44;cursor:pointer">삭제</button>'
         +'</div>';
     });
   }
   showModal('<div class="modal-title">'+t('histTitle')+'</div>'
     +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+esc(g.title)+'</div>'
     +'<div style="overflow-y:auto;max-height:260px">'+rows+'</div>'
-    +'<button class="btn-full" id="histClose">'+t('close')+'</button>'
-    ,true);
-  document.getElementById('histClose').onclick=closeModal;
-  document.querySelectorAll('.hedit-btn').forEach(function(btn){
-    btn.onclick=function(){editLog(btn.dataset.gid,parseInt(btn.dataset.idx));};
+    +'<button class="btn-full" id="hcb">'+t('close')+'</button>',true);
+  document.getElementById('hcb').onclick=closeModal;
+  document.querySelectorAll('.heb').forEach(b=>{
+    b.onclick=()=>editLog(b.dataset.gi,+b.dataset.li);
   });
-  document.querySelectorAll('.hdel-btn').forEach(function(btn){
-    btn.onclick=function(){delLog(btn.dataset.gid,parseInt(btn.dataset.idx));};
+  document.querySelectorAll('.hdb').forEach(b=>{
+    b.onclick=()=>delLog(b.dataset.gi,+b.dataset.li);
   });
+}
+function editLog(gid,li){
+  const g=goals.find(x=>x.id===gid),l=g.logs[li];
+  showModal('<div class="modal-title">기록 수정</div>'
+    +'<div style="font-size:12px;color:#888;margin-bottom:12px">'+esc(g.title)+' · '+l.date+'</div>'
+    +'<label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">값 ('+esc(g.unit)+')</label>'
+    +'<input id="elv" type="number" value="'+l.value+'" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;margin-bottom:10px;box-sizing:border-box">'
+    +'<label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">메모</label>'
+    +'<input id="eln" type="text" value="'+esc(l.note||'')+'" placeholder="메모 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:16px;box-sizing:border-box">'
+    +'<button class="btn-full" id="elsv">저장</button>'
+    +'<button class="btn-full" style="background:#f5f5f5;color:var(--text);margin-top:8px" id="elcn">취소</button>');
+  document.getElementById('elsv').onclick=()=>{
+    const v=parseFloat(document.getElementById('elv').value);
+    const n=document.getElementById('eln').value.trim();
+    if(isNaN(v)||v<0){alert('올바른 값을 입력하세요');return;}
+    g.logs[li]={date:l.date,value:v,note:n};
+    save();render();closeModal();
+    setTimeout(()=>openHist(gid),150);
+  };
+  document.getElementById('elcn').onclick=()=>{closeModal();setTimeout(()=>openHist(gid),150);};
+}
+function delLog(gid,li){
+  if(!confirm('이 기록을 삭제할까요?'))return;
+  goals.find(x=>x.id===gid).logs.splice(li,1);
+  save();render();closeModal();
+  setTimeout(()=>openHist(gid),150);
 }
 function showModal(html,sheet=false){
   closeModal();
@@ -1278,7 +1268,7 @@ function showModal(html,sheet=false){
 }
 function closeModal(){document.getElementById('modal-ov')?.remove();}
 
-if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister();});});if(window.caches){caches.keys().then(function(k){k.forEach(function(n){caches.delete(n);});});}}
+if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>{r.forEach(x=>x.unregister());if(window.caches)caches.keys().then(k=>k.forEach(n=>caches.delete(n)));});}
 
 load();
 // 언어 버튼 초기 상태
