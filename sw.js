@@ -1,5 +1,5 @@
-// v11 - 네트워크 우선, 캐시 없음
-const CACHE = 'kpi-v19';
+// v12 - 오류수정+다크포레스트
+const CACHE = 'kpi-v20';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
