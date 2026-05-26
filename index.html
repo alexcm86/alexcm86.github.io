@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526122017 -->
+<!DOCTYPE html><!-- v20260526122422 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1264,9 +1264,14 @@ function showModal(html,sheet=false){
 }
 function closeModal(){document.getElementById('modal-ov')?.remove();}
 
-// 서비스워커 제거 (캐시 문제 방지)
+// 서비스워커 + 캐시 완전 제거
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+    if(regs.length>0 && caches){
+      caches.keys().then(keys=>keys.forEach(k=>caches.delete(k)));
+    }
+  });
 }
 
 load();
