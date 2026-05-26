@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260526121641 -->
+<!DOCTYPE html><!-- v20260526122017 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1264,8 +1264,9 @@ function showModal(html,sheet=false){
 }
 function closeModal(){document.getElementById('modal-ov')?.remove();}
 
+// 서비스워커 제거 (캐시 문제 방지)
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('/alexkpi/sw.js').catch(()=>{}));
+  navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
 }
 
 load();
