@@ -1,5 +1,5 @@
-// v12 - 오류수정+다크포레스트
-const CACHE = 'kpi-v20';
+// v13 - 시작일기능
+const CACHE = 'kpi-v21';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
