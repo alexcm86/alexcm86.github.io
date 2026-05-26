@@ -1,5 +1,5 @@
-// v14 - 시작일UI수정
-const CACHE = 'kpi-v22';
+// v15 - 시작일다국어
+const CACHE = 'kpi-v23';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
