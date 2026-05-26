@@ -1,5 +1,5 @@
-// v9 - 강제 캐시 초기화
-const CACHE = 'kpi-v17';
+// v10 - 히스토리 수정기능
+const CACHE = 'kpi-v18';
 const FILES = ['/alexkpi/', '/alexkpi/index.html', '/alexkpi/manifest.json', '/alexkpi/icon-192.png', '/alexkpi/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -22,5 +22,5 @@ self.addEventListener('fetch', e => {
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
     return;
   }
-  e.respondWith(fetch(e.request).then(r => { const c=r.clone(); caches.open('kpi-v17').then(cache=>cache.put(e.request,c)); return r; }).catch(()=>caches.match(e.request)));
+  e.respondWith(fetch(e.request).then(r => { const c=r.clone(); caches.open('kpi-v18').then(cache=>cache.put(e.request,c)); return r; }).catch(()=>caches.match(e.request)));
 });
