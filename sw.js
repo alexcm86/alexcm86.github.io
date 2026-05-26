@@ -1,14 +1,11 @@
-// v10 - 히스토리 수정기능
-const CACHE = 'kpi-v18';
-const FILES = ['/alexkpi/', '/alexkpi/index.html', '/alexkpi/manifest.json', '/alexkpi/icon-192.png', '/alexkpi/icon-512.png'];
+// v11 - 네트워크 우선, 캐시 없음
+const CACHE = 'kpi-v19';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
-  // 이전 버전 캐시 전부 삭제
   e.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.map(k => caches.delete(k)))
@@ -16,11 +13,9 @@ self.addEventListener('activate', e => {
   );
 });
 
+// 모든 요청 네트워크 우선 - 캐시 절대 안 씀
 self.addEventListener('fetch', e => {
-  // index.html은 항상 네트워크 우선 (캐시 무시)
-  if (e.request.url.includes('index.html') || e.request.mode === 'navigate') {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-    return;
-  }
-  e.respondWith(fetch(e.request).then(r => { const c=r.clone(); caches.open('kpi-v18').then(cache=>cache.put(e.request,c)); return r; }).catch(()=>caches.match(e.request)));
+  e.respondWith(
+    fetch(e.request, {cache: 'no-store'}).catch(() => caches.match(e.request))
+  );
 });
