@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260529092138 -->
+<!DOCTYPE html><!-- v20260529092511 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1374,21 +1374,24 @@ function showModal(html,sheet=false){
 function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/alexkpi/sw.js').then(reg=>{
-    if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
-    reg.addEventListener('updatefound',()=>{
-      const nw=reg.installing;
-      nw.addEventListener('statechange',()=>{
-        if(nw.state==='installed'&&navigator.serviceWorker.controller){
-          window.location.reload();
-        }
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/alexkpi/sw.js?20260529092511').then(reg=>{
+      console.log('[App] SW registered');
+      if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+      reg.addEventListener('updatefound',()=>{
+        const nw=reg.installing;
+        nw.addEventListener('statechange',()=>{
+          if(nw.state==='installed'&&navigator.serviceWorker.controller){
+            window.location.reload(true);
+          }
+        });
       });
-    });
-    document.addEventListener('visibilitychange',()=>{
-      if(document.visibilityState==='visible') reg.update();
-    });
+      document.addEventListener('visibilitychange',()=>{
+        if(document.visibilityState==='visible') reg.update();
+      });
+    }).catch(e=>console.warn('[App] SW fail',e));
+    navigator.serviceWorker.addEventListener('controllerchange',()=>window.location.reload(true));
   });
-  navigator.serviceWorker.addEventListener('controllerchange',()=>window.location.reload());
 }
 
 load();
