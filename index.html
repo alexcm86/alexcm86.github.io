@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260529091908 -->
+<!DOCTYPE html><!-- v20260529092138 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1373,7 +1373,23 @@ function showModal(html,sheet=false){
 }
 function closeModal(){document.getElementById('modal-ov')?.remove();}
 
-if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister();});});if(window.caches){caches.keys().then(function(k){k.forEach(function(n){caches.delete(n);});});}}
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/alexkpi/sw.js').then(reg=>{
+    if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+    reg.addEventListener('updatefound',()=>{
+      const nw=reg.installing;
+      nw.addEventListener('statechange',()=>{
+        if(nw.state==='installed'&&navigator.serviceWorker.controller){
+          window.location.reload();
+        }
+      });
+    });
+    document.addEventListener('visibilitychange',()=>{
+      if(document.visibilityState==='visible') reg.update();
+    });
+  });
+  navigator.serviceWorker.addEventListener('controllerchange',()=>window.location.reload());
+}
 
 load();
 // 언어 버튼 초기 상태
