@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260529092511 -->
+<!DOCTYPE html><!-- v20260529094117 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -339,12 +339,11 @@ const HAENAEM_IMGS = [
 ];
 
 function getHaenaemStage(avg) {
-  if (avg >= 100) return 4; // stage5 (완전히 꽃핌)
-  if (avg >= 80)  return 3; // stage4
-  if (avg >= 60)  return 2; // stage3
-  if (avg >= 40)  return 1; // stage2
-  if (avg >= 20)  return 0; // stage1 -> 사실상 0부터
-  return 0; // stage1 (새싹)
+  if (avg >= 80)  return 4; // A5 (꽃 만개)
+  if (avg >= 60)  return 3; // A4 (파이팅)
+  if (avg >= 40)  return 2; // A3 (손 흔들기)
+  if (avg >= 20)  return 1; // A2 (미소)
+  return 0;                 // A1 (새싹)
 }
 function getHaenaemMsg(avg) {
   if (avg >= 100) return lang==='ko'?'🎉 성장 완료!':'🎉 Complete!';
@@ -485,11 +484,11 @@ function load(){
     const d=JSON.parse(localStorage.getItem(STORAGE_KEY));
     goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'default'; applyTheme(theme);
 
-  }catch{goals=[];cardScale=100;}
+  }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='default';applyTheme('default');}
 }
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
 function exportData(){
-  const data=JSON.stringify({goals,scale:cardScale,lang},null,2);
+  const data=JSON.stringify({goals,todos,scale:cardScale,lang},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -764,7 +763,7 @@ function switchView(v){
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
     b.classList.toggle('active',(i===0&&v==='list')||(i===1&&v==='dash')||(i===2&&v==='history')||(i===3&&v==='todo'));
   });
-  fab.style.display = v==='history'?'none':'flex';
+  fab.style.display = (v==='history'||v==='todo')?'none':'flex';
   render();
 }
 
@@ -797,7 +796,10 @@ function renderDash(){
   const byCat=CATS.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
   const sorted=[...goals].sort((a,b)=>pctVal(b)-pctVal(a));
   const urgent=goals.filter(g=>g.deadline).map(g=>{
-    const diff=Math.ceil((new Date(g.deadline)-new Date())/86400000);
+    const [dy,dm,dd]=g.deadline.split('-').map(Number);
+    const deadlineMs=new Date(dy,dm-1,dd).setHours(0,0,0,0);
+    const todayMs=new Date().setHours(0,0,0,0);
+    const diff=Math.ceil((deadlineMs-todayMs)/86400000);
     return {...g,diff};
   }).filter(g=>g.diff>=0&&g.diff<=30).sort((a,b)=>a.diff-b.diff);
 
@@ -812,7 +814,7 @@ function renderDash(){
   </div>
   <div class="stat-card" style="margin-bottom:10px;padding:0;overflow:hidden;display:flex;align-items:stretch;min-height:110px;${isComplete?'border:2px solid #f5a623;box-shadow:0 0 20px rgba(245,166,35,0.35)':''}">
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 12px 16px 18px;gap:4px">
-      <div style="font-size:11px;color:var(--sub);font-weight:600;letter-spacing:0.3px">${t("avgPct")}</div>
+      <div style="font-size:12px;color:var(--sub);text-align:left">${t("avgPct")}</div>
       <div class="stat-val" style="font-size:36px;justify-content:flex-start">${avg}<sub style="font-size:16px">%</sub></div>
       <div style="height:6px;background:#f0f0f0;border-radius:99px;overflow:hidden;margin-top:4px">
         <div style="height:100%;width:${Math.min(100,avg)}%;background:${avg>=100?'linear-gradient(90deg,#f5a623,#fbbf24)':avg>=60?'linear-gradient(90deg,#059669,#34d399)':'linear-gradient(90deg,#4248cc,#818cf8)'};border-radius:99px;transition:width 0.6s ease"></div>
@@ -833,7 +835,7 @@ function renderDash(){
       <div style="position:relative;flex-shrink:0">
         <canvas id="donut-chart" width="90" height="90"></canvas>
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-          <div style="font-size:16px;font-weight:800;color:#1a1d2e;line-height:1">${avg}%</div>
+          <div style="font-size:16px;font-weight:800;color:var(--text);line-height:1">${avg}%</div>
           <div style="font-size:10px;color:#6b7280;margin-top:2px">${t("avg")}</div>
         </div>
       </div>
@@ -915,7 +917,7 @@ function drawDonut(){
   // inner hole
   ctx.beginPath();
   ctx.arc(cx,cy,innerR,0,2*Math.PI);
-  ctx.fillStyle='#fff';
+  ctx.fillStyle=theme==='dark'?'#161b22':'#fff';
   ctx.fill();
 }
 
@@ -1228,11 +1230,11 @@ function saveAdd(){
 function openEdit(id){
   const g=goals.find(x=>x.id===id);
   showModal(`<div class="modal-title">${t("editTitle")}</div>
-    <label>목표 이름 *</label>
+    <label>${t('nameLbl')}</label>
     <input id="f-title" value="${esc(g.title)}" oninput="chkSave()">
     <div class="row2">
       <div><label>${t("catLbl")}</label><select id="f-cat">${getCats().map((c,i)=>`<option value="${CATS_KO[i]}"${CATS_KO[i]===g.category?' selected':''}>${c}</option>`).join('')}</select></div>
-      <div><label>단위</label><input id="f-unit" value="${esc(g.unit||"")}"></div>
+      <div><label>${t('unitLbl')}</label><input id="f-unit" value="${esc(g.unit||"")}"></div>
     </div>
     <div class="row2">
       <div><label>목표 수치 *</label><input id="f-target" type="number" value="${g.target}"></div>
@@ -1242,7 +1244,7 @@ function openEdit(id){
       <div><label>${t('startLbl')}</label><input id="f-start" type="date" value="${g.startAt||''}"></div>
       <div></div>
     </div>
-    <label>메모</label><textarea id="f-note">${esc(g.note||"")}</textarea>
+    <label>${t('noteLbl')}</label><textarea id="f-note">${esc(g.note||"")}</textarea>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">${t("cancel")}</button>
       <button class="btn-save" onclick="saveEdit('${id}')">${t("save")}</button>
@@ -1250,6 +1252,7 @@ function openEdit(id){
 }
 function saveEdit(id){
   const i=goals.findIndex(x=>x.id===id);
+  if(i===-1) return;
   goals[i]={...goals[i],
     title:document.getElementById('f-title').value.trim(),
     category:document.getElementById('f-cat').value,
@@ -1281,7 +1284,7 @@ function openLog(id){
 function chkLog(){const v=document.getElementById('l-val')?.value;const b=document.getElementById('btn-log');if(b)b.disabled=!v;}
 function saveLog(id){
   const val=parseFloat(document.getElementById('l-val').value)||0;
-  if(!val) return;
+  if(!val||val<=0){alert(lang==='ko'?'0보다 큰 값을 입력하세요':'Please enter a value greater than 0');return;}
   const note=document.getElementById('l-note').value.trim();
   const i=goals.findIndex(x=>x.id===id);
   goals[i].logs.push({date:today(),value:val,note});
@@ -1375,7 +1378,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/alexkpi/sw.js?20260529092511').then(reg=>{
+    navigator.serviceWorker.register('/alexkpi/sw.js?20260529094117').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
