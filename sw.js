@@ -1,6 +1,6 @@
-/* v20260529094117 */
-const CACHE = 'v20260529094117';
-const URLS = ['/alexkpi/', '/alexkpi/index.html', '/alexkpi/manifest.json', '/alexkpi/icon-192.png', '/alexkpi/icon-512.png'];
+/* v20260530000000 */
+const CACHE = 'v20260530000000';
+const URLS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -22,11 +22,11 @@ self.addEventListener('message', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if(e.request.mode === 'navigate' || e.request.url.includes('index.html') || e.request.url.endsWith('/alexkpi/')) {
+  if(e.request.mode === 'navigate' || e.request.url.includes('index.html') || e.request.url.endsWith('/')) {
     e.respondWith(
       fetch(e.request, {cache:'no-store'})
         .then(res => { caches.open(CACHE).then(c => c.put(e.request, res.clone())); return res; })
-        .catch(() => caches.match('/alexkpi/index.html'))
+        .catch(() => caches.match('/index.html'))
     );
     return;
   }

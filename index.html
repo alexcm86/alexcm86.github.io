@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260529094117 -->
+<!DOCTYPE html><!-- v20260530000000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -10,8 +10,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="해냄">
 <meta name="theme-color" content="#4248cc">
-<link rel="manifest" href="/alexkpi/manifest.json">
-<link rel="apple-touch-icon" href="/alexkpi/icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <title>해냄</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -1378,7 +1378,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/alexkpi/sw.js?20260529094117').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260529094117').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
