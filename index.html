@@ -124,7 +124,7 @@
 
   /* KPI Card */
   .kpi-card{background:var(--card);border-radius:14px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(66,72,204,0.13),0 1px 4px rgba(66,72,204,0.08);position:relative;margin-bottom:8px;overflow:hidden;}
-  .kpi-card.done{border-color:#4248cc;box-shadow:0 0 0 3px rgba(66,72,204,0.15);box-shadow:0 2px 12px rgba(79,70,229,0.15);}
+  .kpi-card.done{border-color:#4248cc;box-shadow:0 2px 12px rgba(79,70,229,0.15);}
   .card-inner{display:flex;align-items:center;padding:0 10px;height:var(--card-h,72px);gap:9px;}
 
   /* Ring - CSS로 크기 제어, viewBox 고정 */
@@ -161,7 +161,7 @@
   .cat-label{font-size:13px;font-weight:700;width:60px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar-track{flex:1;height:8px;background:#f0f0f0;border-radius:99px;overflow:hidden}
   .bar-fill{height:100%;border-radius:99px;transition:width 0.5s ease;filter:brightness(1.05);}
-  .bar-pct{font-size:13px;font-weight:700;color:#4248cc;font-weight:700;width:36px;text-align:right}
+  .bar-pct{font-size:13px;font-weight:700;color:#4248cc;width:36px;text-align:right}
   #dash-main{flex:1;overflow-y:auto;padding-bottom:calc(130px + var(--safe-bottom))}
 
   /* Top KPI list in dash */
@@ -482,13 +482,13 @@ function fmt(n){
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(STORAGE_KEY));
-    goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'default'; applyTheme(theme);
+    goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'default'; applyTheme(theme,true);
 
-  }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='default';applyTheme('default');}
+  }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='default';applyTheme('default',true);}
 }
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
 function exportData(){
-  const data=JSON.stringify({goals,todos,scale:cardScale,lang},null,2);
+  const data=JSON.stringify({goals,todos,scale:cardScale,lang,theme},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -507,8 +507,10 @@ function importData(e){
       const d=JSON.parse(ev.target.result);
       if(!Array.isArray(d.goals)) throw new Error('invalid');
       goals=d.goals;
+      if(d.todos) todos=d.todos;
       if(d.scale) cardScale=d.scale;
       if(d.lang) lang=d.lang;
+      if(d.theme) applyTheme(d.theme,true); else applyTheme('default',true);
       save();render();
       alert(lang==='ko'?`✅ ${goals.length}개 KPI 복원 완료!`:`✅ ${goals.length} KPIs restored!`);
     }catch{
@@ -520,6 +522,7 @@ function importData(e){
 }
 function genId(){return Math.random().toString(36).slice(2,9);}
 function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function parseLocalDate(s){if(!s)return null;const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function pctVal(g){return g.target>0?Math.round((g.current/g.target)*100):0;}
 
@@ -548,7 +551,7 @@ function formatDateLabel(dateStr){
 function renderTodoItems(items, isHistory){
   let h='';
   items.forEach(td=>{
-    const kpiName=td.kpiId?goals.find(g=>g.id===td.kpiId)?.name:'';
+    const kpiName=td.kpiId?goals.find(g=>g.id===td.kpiId)?.title:'';
     const isDone=td.done;
     h+=`<div class="todo-item${isDone?' done':''}" onclick="${isHistory?'':` toggleTodo('${td.id}')`}">
       <div class="todo-check"><span class="todo-check-icon">✓</span></div>
@@ -562,7 +565,7 @@ function renderTodoItems(items, isHistory){
 
 function renderTodo(){
   const todayStr=today();
-  const kpiOptions=goals.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('');
+  // kpi 옵션 (미사용 제거)
 
   // 날짜별 그룹핑 (최신순)
   const dateMap={};
@@ -668,13 +671,12 @@ function deleteTodo(id){
 }
 
 
-function applyTheme(t){
+function applyTheme(t,skipSaveRender=false){
   theme=t;
   document.body.className=t==='peach'?'theme-peach':t==='dark'?'theme-dark':t==='forest'?'theme-forest':'';
   const btn=document.getElementById('theme-btn');
   if(btn) btn.textContent=t==='peach'?'🌸':t==='dark'?'🌙':t==='forest'?'🌿':'🎨';
-  save();
-  render();
+  if(!skipSaveRender){save();render();}
 }
 function toggleTheme(){
   const next=theme==='default'?'peach':theme==='peach'?'dark':theme==='dark'?'forest':'default';
@@ -722,7 +724,7 @@ function captureScreen(){
     }).catch(()=>{
       if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
       if(btn) btn.style.opacity='1';
-      alert('캡처에 실패했어요.');
+      alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
     });
     return;
   }
@@ -755,7 +757,7 @@ function captureScreen(){
     if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
     target.scrollTop=scrollTop;
     if(btn) btn.style.opacity='1';
-    alert('캡처에 실패했어요.');
+    alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
   });
 }
 function switchView(v){
@@ -763,7 +765,6 @@ function switchView(v){
   document.querySelectorAll('.tab-btn').forEach((b,i)=>{
     b.classList.toggle('active',(i===0&&v==='list')||(i===1&&v==='dash')||(i===2&&v==='history')||(i===3&&v==='todo'));
   });
-  fab.style.display = (v==='history'||v==='todo')?'none':'flex';
   render();
 }
 
@@ -855,7 +856,7 @@ function renderDash(){
 
   // ② 달성률 전체 순위 (전체현황 스타일로)
   h+=`<div class="section-card">
-    <div class="section-title">🏆 달성률 전체 순위</div>`;
+    <div class="section-title">${t('rankTitle')}</div>`;
   sorted.forEach((g,i)=>{
     const p=pctVal(g), color=getCAT_COLOR()[g.category];
     const medals=['🥇','🥈','🥉'];
@@ -872,7 +873,7 @@ function renderDash(){
 
   // ③ D-day 임박
   if(urgent.length){
-    h+=`<div class="section-card"><div class="section-title">⏰ 마감 임박</div>`;
+    h+=`<div class="section-card"><div class="section-title">${t('ddayTitle')}</div>`;
     urgent.slice(0,4).forEach(g=>{
       const color=getCAT_COLOR()[g.category], col=g.diff<7?'#dc2626':'#d97706';
       h+=`<div class="cat-row">
@@ -917,7 +918,7 @@ function drawDonut(){
   // inner hole
   ctx.beginPath();
   ctx.arc(cx,cy,innerR,0,2*Math.PI);
-  ctx.fillStyle=theme==='dark'?'#161b22':'#fff';
+  ctx.fillStyle=theme==='dark'?'#161b22':theme==='peach'?'#fff8f6':theme==='forest'?'#ffffff':'#ffffff';
   ctx.fill();
 }
 
@@ -934,7 +935,7 @@ function renderList(){
   </div>`;
   let list=filter==='전체'?[...goals]:goals.filter(g=>g.category===filter);
   if(sortMode==='pct') list=[...list].sort((a,b)=>pctVal(b)-pctVal(a));
-  if(!list.length) return h+`<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">KPI를 추가해 목표를 관리하세요</div></div>`;
+  if(!list.length) return h+`<div class="empty"><div class="empty-icon">🎯</div><div class="empty-text">${t('emptyList')}</div></div>`;
   return h+`<div id="card-list">`+list.map(renderCard).join('')+`</div>`;
 }
 function setFilter(c){filter=c;render();}
@@ -996,7 +997,7 @@ function renderHistory(){
   </div>`;
 
   if(!yrGoals.length){
-    h+=`<div class="no-history" style="padding:30px 0"><div style="font-size:13px;color:var(--mute)">${histYear}년 데이터가 없어요</div></div>`;
+    h+=`<div class="no-history" style="padding:30px 0"><div style="font-size:13px;color:var(--mute)">${histYear}${lang==='ko'?'년 데이터가 없어요':' - No data'}</div></div>`;
     return h+`</div>`;
   }
 
@@ -1026,8 +1027,8 @@ function renderHistory(){
     h+=`<div style="margin-bottom:14px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <div style="width:8px;height:8px;border-radius:50%;background:${getCAT_COLOR()[cat]};flex-shrink:0"></div>
-        <div style="font-size:12px;font-weight:800;color:${getCAT_COLOR()[cat]}">${cat}</div>
-        <div style="font-size:10px;color:var(--sub);margin-left:auto">${catDone}/${items.length}개 달성 · 평균 ${catAvg}%</div>
+        <div style="font-size:12px;font-weight:800;color:${getCAT_COLOR()[cat]}">${catDisplay(cat)}</div>
+        <div style="font-size:10px;color:var(--sub);margin-left:auto">${catDone}/${items.length}${lang==='ko'?'개 달성 · 평균 ':` done · avg `}${catAvg}%</div>
       </div>`;
     items.sort((a,b)=>pctVal(b)-pctVal(a)).forEach(g=>{
       const p=pctVal(g), disp=Math.min(100,p);
@@ -1047,7 +1048,7 @@ function renderHistory(){
           </div>
           <div class="hist-goal-info">
             <div class="hist-goal-title">${esc(g.title)}</div>
-            <div class="hist-goal-sub">${fmt(g.current)} / ${fmt(g.target)} ${esc(g.unit||'')} · ${yrGoalLogs.length}건 기록</div>
+            <div class="hist-goal-sub">${fmt(g.current)} / ${fmt(g.target)} ${esc(g.unit||'')} · ${yrGoalLogs.length}${lang==='ko'?' 건 기록':' records'}</div>
           </div>
           <div class="hist-goal-pct" style="color:${color}">${p}%</div>
           <div class="hist-goal-arrow" id="arr-${gid}">▶</div>
@@ -1057,9 +1058,9 @@ function renderHistory(){
             <div class="hist-mini-fill" style="width:${disp}%;background:${color}"></div>
           </div>
           <div style="font-size:10px;color:var(--sub);margin-bottom:8px">
-            ${g.deadline?'마감: '+g.deadline+' · ':''} 
-            생성: ${g.createdAt||'-'} · 
-            ${g.current>=g.target?'✅ 달성완료':'진행중'}
+            ${g.deadline?(lang==='ko'?'마감: ':'Due: ')+g.deadline+' · ':''}
+            ${lang==='ko'?'생성: ':'Created: '}${g.createdAt||'-'} · 
+            ${g.current>=g.target?'✅ '+(lang==='ko'?'달성완료':'Achieved'):(lang==='ko'?'진행중':'In Progress')}
           </div>
           ${yrGoalLogs.length===0
             ? `<div style="font-size:12px;color:var(--mute);padding:8px 0">이 연도에 기록이 없어요</div>`
@@ -1103,12 +1104,12 @@ function renderCard(g){
   const todayStr=today();
   // 시작일이 미래면 "N일 후 시작" 표시
   if(g.startAt && g.startAt > todayStr){
-    const startDiff=Math.ceil((new Date(g.startAt)-new Date())/86400000);
+    const startDiff=Math.ceil((parseLocalDate(g.startAt)-new Date())/86400000);
     dday=`<span style="font-size:var(--fsXS,9px);color:#6366f1">D-${startDiff} 시작</span>`;
   } else if(g.deadline){
-    const diff=Math.ceil((new Date(g.deadline)-new Date())/86400000);
+    const diff=Math.ceil((parseLocalDate(g.deadline)-new Date())/86400000);
     const col=diff<7?'#dc2626':'#aaa';
-    dday=`<span style="font-size:var(--fsXS,9px);color:${col}">${diff>0?'D-'+diff:diff===0?'오늘':'D+'+Math.abs(diff)}</span>`;
+    dday=`<span style="font-size:var(--fsXS,9px);color:${col}">${diff>0?'D-'+diff:diff===0?(lang==='ko'?'오늘':'Today'):'D+'+Math.abs(diff)}</span>`;
   }
   // SVG ring: viewBox 고정(0 0 44 44), CSS로 크기 제어 → 깨짐 없음
   const dashTotal=2*Math.PI*18; // r=18
@@ -1120,7 +1121,7 @@ function renderCard(g){
   </svg>`;
   const handle=sortMode==='manual'?`<div class="drag-handle"><div></div><div></div><div></div></div>`:'';
   return `<div class="kpi-card${done?' done':''}" data-id="${g.id}" draggable="${sortMode==='manual'}">
-    ${done?`<div class="done-badge" style="font-size:var(--fsXS,9px)">✓달성</div>`:''}
+    ${done?`<div class="done-badge" style="font-size:var(--fsXS,9px)">${lang==='ko'?'✓달성':'✓Done'}</div>`:''}
     <div class="card-inner">
       <div class="ring-wrap">
         ${ring}
@@ -1128,7 +1129,7 @@ function renderCard(g){
       </div>
       <div class="kpi-body">
         <div class="kpi-chips">
-          <span class="cat-chip" style="background:${bg};color:${color};font-size:var(--fsXS,9px)">${g.category}</span>${dday}
+          <span class="cat-chip" style="background:${bg};color:${color};font-size:var(--fsXS,9px)">${catDisplay(g.category)}</span>${dday}
         </div>
         <div class="kpi-title" style="font-size:var(--fs,13px)">${esc(g.title)}</div>
         <div class="kpi-nums" style="font-size:var(--fsS,11px)">${fmt(g.current)} / ${fmt(g.target)} ${esc(g.unit||"")}</div>
@@ -1137,10 +1138,10 @@ function renderCard(g){
       ${handle}
     </div>
     <div class="kpi-actions" style="height:var(--act-h,30px)">
-      <button class="act-btn act-log" style="background:${color};font-size:var(--fsS,11px)" onclick="openLog('${g.id}')">+ 기록</button>
-      <button class="act-btn act-hist" style="font-size:var(--fsS,11px)" onclick="openHist('${g.id}')">히스토리</button>
-      <button class="act-btn act-edit" style="font-size:var(--fsS,11px)" onclick="openEdit('${g.id}')">수정</button>
-      <button class="act-btn act-del" style="font-size:var(--fsS,11px)" onclick="delGoal('${g.id}')">삭제</button>
+      <button class="act-btn act-log" style="background:${color};font-size:var(--fsS,11px)" onclick="openLog('${g.id}')">${lang==='ko'?'+ 기록':'+ Log'}</button>
+      <button class="act-btn act-hist" style="font-size:var(--fsS,11px)" onclick="openHist('${g.id}')">${lang==='ko'?'히스토리':'History'}</button>
+      <button class="act-btn act-edit" style="font-size:var(--fsS,11px)" onclick="openEdit('${g.id}')">${lang==='ko'?'수정':'Edit'}</button>
+      <button class="act-btn act-del" style="font-size:var(--fsS,11px)" onclick="delGoal('${g.id}')">${lang==='ko'?'삭제':'Delete'}</button>
     </div>
   </div>`;
 }
@@ -1229,6 +1230,7 @@ function saveAdd(){
 }
 function openEdit(id){
   const g=goals.find(x=>x.id===id);
+  if(!g) return;
   showModal(`<div class="modal-title">${t("editTitle")}</div>
     <label>${t('nameLbl')}</label>
     <input id="f-title" value="${esc(g.title)}" oninput="chkSave()">
@@ -1237,8 +1239,8 @@ function openEdit(id){
       <div><label>${t('unitLbl')}</label><input id="f-unit" value="${esc(g.unit||"")}"></div>
     </div>
     <div class="row2">
-      <div><label>목표 수치 *</label><input id="f-target" type="number" value="${g.target}"></div>
-      <div><label>마감일</label><input id="f-deadline" type="date" value="${g.deadline||''}"></div>
+      <div><label>${t('targetLbl')}</label><input id="f-target" type="number" value="${g.target}"></div>
+      <div><label>${t('deadlineLbl')}</label><input id="f-deadline" type="date" value="${g.deadline||''}"></div>
     </div>
     <div class="row2">
       <div><label>${t('startLbl')}</label><input id="f-start" type="date" value="${g.startAt||''}"></div>
@@ -1253,11 +1255,14 @@ function openEdit(id){
 function saveEdit(id){
   const i=goals.findIndex(x=>x.id===id);
   if(i===-1) return;
+  const newTitle=document.getElementById('f-title').value.trim();
+  const newTarget=Number(document.getElementById('f-target').value);
+  if(!newTitle||newTarget<=0){alert(lang==='ko'?'목표 이름과 수치를 확인하세요':'Check goal name and target value');return;}
   goals[i]={...goals[i],
-    title:document.getElementById('f-title').value.trim(),
+    title:newTitle,
     category:document.getElementById('f-cat').value,
     unit:document.getElementById('f-unit').value.trim(),
-    target:Number(document.getElementById('f-target').value),
+    target:newTarget,
     deadline:document.getElementById('f-deadline').value,
     startAt:document.getElementById('f-start').value||goals[i].startAt||today(),
     note:document.getElementById('f-note').value.trim()
@@ -1266,10 +1271,11 @@ function saveEdit(id){
 }
 function openLog(id){
   const g=goals.find(x=>x.id===id);
+  if(!g) return;
   showModal(`<div class="modal-title">${t("logTitle")}</div>
     <div style="font-size:13px;color:#555;margin-bottom:12px">
       <b>${esc(g.title)}</b><br>
-      현재 <b>${fmt(g.current)}</b> / 목표 <b>${fmt(g.target)} ${esc(g.unit)}</b>
+      ${lang==='ko'?'현재':'Current'} <b>${fmt(g.current)}</b> / ${lang==='ko'?'목표':'Target'} <b>${fmt(g.target)} ${esc(g.unit)}</b>
     </div>
     <label>${t("logLbl")}</label>
     <input id="l-val" type="number" placeholder="${t('logPh')}" oninput="chkLog()">
@@ -1287,26 +1293,28 @@ function saveLog(id){
   if(!val||val<=0){alert(lang==='ko'?'0보다 큰 값을 입력하세요':'Please enter a value greater than 0');return;}
   const note=document.getElementById('l-note').value.trim();
   const i=goals.findIndex(x=>x.id===id);
+  if(i===-1) return;
   goals[i].logs.push({date:today(),value:val,note});
   goals[i].current=goals[i].logs.reduce(function(s,l){return s+l.value;},0);
   save();closeModal();render();
 }
 function editLog(gid,idx){
   const g=goals.find(x=>x.id===gid);
+  if(!g||!g.logs[idx]) return;
   const l=g.logs[idx];
-  showModal(`<div class="modal-title">기록 수정</div>
+  showModal(`<div class="modal-title">${lang==='ko'?'기록 수정':'Edit Record'}</div>
     <div style="font-size:12px;color:#888;margin-bottom:14px">${esc(g.title)} · ${l.date}</div>
-    <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">값 (${esc(g.unit)})</label>
+    <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">${lang==='ko'?'값':'Value'} (${esc(g.unit)})</label>
     <input id="elv" type="number" value="${l.value}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;margin-bottom:10px;box-sizing:border-box">
-    <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">메모</label>
-    <input id="eln" type="text" value="${esc(l.note||'')}" placeholder="메모 (선택)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:16px;box-sizing:border-box">
-    <button class="btn-full" id="elSave">저장</button>
-    <button class="btn-full" style="background:#f5f5f5;color:var(--text);margin-top:8px" id="elCancel">취소</button>
+    <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">${lang==='ko'?'메모':'Note'}</label>
+    <input id="eln" type="text" value="${esc(l.note||'')}" placeholder="${lang==='ko'?'메모 (선택)':'Note (optional)'}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:16px;box-sizing:border-box">
+    <button class="btn-full" id="elSave">${lang==='ko'?'저장':'Save'}</button>
+    <button class="btn-full" style="background:#f5f5f5;color:var(--text);margin-top:8px" id="elCancel">${lang==='ko'?'취소':'Cancel'}</button>
   `);
   document.getElementById('elSave').onclick=function(){
     const v=parseFloat(document.getElementById('elv').value);
     const n=document.getElementById('eln').value.trim();
-    if(isNaN(v)||v<0){alert('올바른 값을 입력하세요');return;}
+    if(isNaN(v)||v<=0){alert(lang==='ko'?'올바른 값을 입력하세요':'Please enter a valid value');return;}
     g.logs[idx]={date:g.logs[idx].date,value:v,note:n};
     g.current=g.logs.reduce(function(s,l){return s+l.value;},0);
     save();render();closeModal();
@@ -1317,8 +1325,9 @@ function editLog(gid,idx){
   };
 }
 function delLog(gid,idx){
-  if(!confirm('이 기록을 삭제할까요?'))return;
+  if(!confirm(lang==='ko'?'이 기록을 삭제할까요?':'Delete this record?'))return;
   const g=goals.find(x=>x.id===gid);
+  if(!g) return;
   g.logs.splice(idx,1);
   g.current=g.logs.reduce(function(s,l){return s+l.value;},0);
   save();render();closeModal();
@@ -1326,6 +1335,7 @@ function delLog(gid,idx){
 }
 function openHist(id){
   const g=goals.find(x=>x.id===id);
+  if(!g) return;
   const color=getCAT_COLOR()[g.category],bg=getCAT_BG()[g.category];
   const logsCopy=[...g.logs].map(function(l,i){return {l:l,i:i};}).reverse();
   let rows='';
@@ -1341,8 +1351,8 @@ function openHist(id){
         +(l.note?'<span style="font-size:11px;color:#999">'+esc(l.note)+'</span>':'')
         +'</div>'
         +'<div style="display:flex;gap:6px">'
-        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hedit-btn" style="flex:1;padding:5px 0;border:1px solid #ddd;border-radius:8px;background:#fafafa;color:#555;cursor:pointer;font-size:12px">✏️ 수정</button>'
-        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hdel-btn" style="flex:1;padding:5px 0;border:1px solid #fcc;border-radius:8px;background:#fff5f5;color:#e44;cursor:pointer;font-size:12px">🗑️ 삭제</button>'
+        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hedit-btn" style="flex:1;padding:5px 0;border:1px solid #ddd;border-radius:8px;background:#fafafa;color:#555;cursor:pointer;font-size:12px">'+(lang==='ko'?'✏️ 수정':'✏️ Edit')+'</button>'
+        +'<button data-gid="'+g.id+'" data-idx="'+i+'" class="hdel-btn" style="flex:1;padding:5px 0;border:1px solid #fcc;border-radius:8px;background:#fff5f5;color:#e44;cursor:pointer;font-size:12px">'+(lang==='ko'?'🗑️ 삭제':'🗑️ Delete')+'</button>'
         +'</div>'
         +'</div>';
     });
