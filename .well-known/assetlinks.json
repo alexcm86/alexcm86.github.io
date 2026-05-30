@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.haenaemkpi.app",
+    "sha256_cert_fingerprints": ["29:16:26:15:BA:43:6F:F5:D9:68:BB:98:DC:0B:A3:E8:8C:CA:13:21:2B:78:0E:9E:5D:3D:C2:6A:CB:39:96:2A"]
+  }
+}]
