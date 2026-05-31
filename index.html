@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260531180000 -->
+<!DOCTYPE html><!-- v20260531181000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -303,10 +303,10 @@
 
   /* Dashboard */
   .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
-  .stat-card{background:#fff;border-radius:14px;padding:14px 8px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.08);color:#1a1d3e}
+  .stat-card{background:var(--card);border-radius:14px;padding:14px 8px;text-align:center;box-shadow:var(--shadow);color:var(--text)}
   .stat-val{font-size:24px;font-weight:800;letter-spacing:-1px;display:flex;align-items:baseline;justify-content:center;gap:1px}
-  .stat-val sub{font-size:12px;font-weight:500;color:#6b7080;vertical-align:baseline}
-  .stat-label{font-size:12px;color:#6b7080;margin-top:2px}
+  .stat-val sub{font-size:12px;font-weight:500;color:var(--sub);vertical-align:baseline}
+  .stat-label{font-size:12px;color:var(--sub);margin-top:2px}
   .section-card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px;border:1px solid var(--border)}
   .section-title{font-size:13px;font-weight:700;color:var(--accent);letter-spacing:0.3px;margin-bottom:12px}
   .cat-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -989,10 +989,10 @@ function renderDash(){
     <div class="stat-card"><div class="stat-val">${total}${lang==='ko'?'<sub>개</sub>':''}</div><div class="stat-label">${t("totalKpi")}</div></div>
     <div class="stat-card"><div class="stat-val">${done}${lang==='ko'?'<sub>개</sub>':''}</div><div class="stat-label">${t("doneCnt")}</div></div>
   </div>
-  <div class="stat-card" style="margin-bottom:10px;padding:0;overflow:hidden;display:flex;align-items:stretch;min-height:110px;background:#fff;${isComplete?'border:2px solid #f5a623;box-shadow:0 0 20px rgba(245,166,35,0.35)':''}">
+  <div class="stat-card" style="margin-bottom:10px;padding:0;overflow:hidden;display:flex;align-items:stretch;min-height:110px;${isComplete?'border:2px solid #f5a623;box-shadow:0 0 20px rgba(245,166,35,0.35)':''}">
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 12px 16px 18px;gap:4px">
-      <div style="font-size:12px;color:#6b7080;text-align:left">${t("avgPct")}</div>
-      <div class="stat-val" style="font-size:36px;justify-content:flex-start;color:#1a1d3e">${avg}<sub style="font-size:16px;color:#6b7080">%</sub></div>
+      <div style="font-size:12px;color:var(--sub);text-align:left">${t("avgPct")}</div>
+      <div class="stat-val" style="font-size:36px;justify-content:flex-start;color:var(--text)">${avg}<sub style="font-size:16px;color:var(--sub)">%</sub></div>
       <div style="height:6px;background:var(--bar-track,#f0f0f0);border-radius:99px;overflow:hidden;margin-top:4px">
         <div style="height:100%;width:${Math.min(100,avg)}%;background:${avg>=100?'linear-gradient(90deg,#f5a623,#fbbf24)':avg>=60?'linear-gradient(90deg,#059669,#34d399)':'linear-gradient(90deg,var(--accent),var(--accent2))'};border-radius:99px;transition:width 0.6s ease"></div>
       </div>
@@ -1581,7 +1581,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260531180000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260531181000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
