@@ -4,8 +4,8 @@
   "description": "목표를 세우고 꾸준히 달성해가는 기록 앱",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1e2960",
-  "theme_color": "#1e2960",
+  "background_color": "#ecedf8",
+  "theme_color": "#4248cc",
   "orientation": "portrait",
   "icons": [
     {
