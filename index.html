@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260531144000 -->
+<!DOCTYPE html><!-- v20260531160000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -33,6 +33,7 @@
     --safe-top:env(safe-area-inset-top,0px);
     --safe-bottom:env(safe-area-inset-bottom,0px);
     --gold:#f5a623;--gold-light:#fff3d6;
+    --bar-track:#f0f0f0;
   }
   /* 피치 테마 */
   body.theme-peach{
@@ -52,6 +53,7 @@
     --header-shadow:rgba(0,0,0,0.6);
     --tab-active-color:#58a6ff;
     --logo-span:#58a6ff;
+    --bar-track:#2d333b;
   }
   body.theme-forest{
     --bg:#f0f7f0;--card:#ffffff;--border:#c8e6c8;
@@ -61,6 +63,37 @@
     --header-shadow:rgba(34,85,34,0.35);
     --tab-active-color:#2d6a2d;
     --logo-span:#a8d5a8;
+  }
+  /* 오션 테마 */
+  body.theme-ocean{
+    --bg:#e8f4f8;--card:#ffffff;--border:#b3d9e8;
+    --text:#0a2540;--sub:#3d6e8a;--mute:#9ec8db;
+    --shadow:0 4px 20px rgba(10,60,100,0.12);
+    --header-bg:linear-gradient(135deg,#0a3d62 0%,#1565c0 60%,#00acc1 100%);
+    --header-shadow:rgba(10,61,98,0.4);
+    --tab-active-color:#0a3d62;
+    --logo-span:#80d8ff;
+  }
+  /* 미드나잇 퍼플 테마 */
+  body.theme-midnight{
+    --bg:#0f0b1e;--card:#1a1530;--border:#2e2550;
+    --text:#e8e0ff;--sub:#9b8ec4;--mute:#3b3060;
+    --shadow:0 4px 24px rgba(0,0,0,0.6);
+    --header-bg:linear-gradient(135deg,#1a0533 0%,#4a0e8f 60%,#7b2ff7 100%);
+    --header-shadow:rgba(100,20,200,0.5);
+    --tab-active-color:#b97aff;
+    --logo-span:#b97aff;
+    --bar-track:#2e2550;
+  }
+  /* 선샤인 테마 */
+  body.theme-sunshine{
+    --bg:#fffde7;--card:#ffffff;--border:#ffe082;
+    --text:#3e2a00;--sub:#8a6a00;--mute:#ffe57f;
+    --shadow:0 4px 20px rgba(200,140,0,0.10);
+    --header-bg:linear-gradient(135deg,#f9a825 0%,#ffca28 60%,#fff176 100%);
+    --header-shadow:rgba(200,140,0,0.35);
+    --tab-active-color:#e65100;
+    --logo-span:#fff9c4;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased;font-synthesis:none}
@@ -137,7 +170,7 @@
   .cat-chip{font-weight:600;border-radius:4px;padding:1px 5px}
   .kpi-title{font-weight:700;line-height:1.3;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .kpi-nums{color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .kpi-bar-wrap{height:3px;background:#f0f0f0;border-radius:99px;overflow:hidden;margin-top:2px}
+  .kpi-bar-wrap{height:3px;background:var(--bar-track,#f0f0f0);border-radius:99px;overflow:hidden;margin-top:2px}
   .kpi-bar-fill{height:100%;border-radius:99px}
   .done-badge{position:absolute;top:6px;right:8px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#fff;font-weight:700;border-radius:5px;padding:1px 5px;line-height:1.4;}
   .drag-handle{flex-shrink:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px;cursor:grab;opacity:0.3}
@@ -159,7 +192,7 @@
   .section-title{font-size:13px;font-weight:700;color:#4248cc;letter-spacing:0.3px;margin-bottom:12px}
   .cat-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
   .cat-label{font-size:13px;font-weight:700;width:60px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .bar-track{flex:1;height:8px;background:#f0f0f0;border-radius:99px;overflow:hidden}
+  .bar-track{flex:1;height:8px;background:var(--bar-track,#f0f0f0);border-radius:99px;overflow:hidden}
   .bar-fill{height:100%;border-radius:99px;transition:width 0.5s ease;filter:brightness(1.05);}
   .bar-pct{font-size:13px;font-weight:700;color:#4248cc;width:36px;text-align:right}
   #dash-main{flex:1;overflow-y:auto;padding-bottom:calc(130px + var(--safe-bottom))}
@@ -239,7 +272,7 @@
   .hist-log-date{color:var(--mute);min-width:84px;font-size:12px}
   .hist-log-val{font-weight:700;border-radius:5px;padding:2px 9px;font-size:12px}
   .hist-log-note{color:#666;flex:1;font-size:12px}
-  .hist-mini-bar{height:4px;background:#f0f0f0;border-radius:99px;overflow:hidden;margin:8px 0 4px}
+  .hist-mini-bar{height:4px;background:var(--bar-track,#f0f0f0);border-radius:99px;overflow:hidden;margin:8px 0 4px}
   .hist-mini-fill{height:100%;border-radius:99px}
   .year-block{margin-bottom:4px}
   .year-content{display:none}
@@ -445,16 +478,28 @@ const CAT_COLOR_DARK={업무:'#818cf8',개인:'#a78bfa',운동:'#34d399',학습:
 const CAT_BG_DARK={업무:'#1e2050',개인:'#2d1f5e',운동:'#064e3b',학습:'#451a03',재무:'#4c0519'};
 const CAT_COLOR_FOREST={업무:'#6366f1',개인:'#8b5cf6',운동:'#059669',학습:'#d97706',재무:'#e11d48'};
 const CAT_BG_FOREST={업무:'#e8e9ff',개인:'#f0ebff',운동:'#d1fae5',학습:'#fef3c7',재무:'#ffe4e6'};
+const CAT_COLOR_OCEAN={업무:'#0277bd',개인:'#0097a7',운동:'#00897b',학습:'#f57c00',재무:'#c62828'};
+const CAT_BG_OCEAN={업무:'#e1f5fe',개인:'#e0f7fa',운동:'#e0f2f1',학습:'#fff3e0',재무:'#ffebee'};
+const CAT_COLOR_MIDNIGHT={업무:'#9d79f7',개인:'#d580ff',운동:'#50e3c2',학습:'#f9c74f',재무:'#ff6b9d'};
+const CAT_BG_MIDNIGHT={업무:'#1e1540',개인:'#2a0d45',운동:'#0a2e28',학습:'#2e1f00',재무:'#2d0a1e'};
+const CAT_COLOR_SUNSHINE={업무:'#f5c842',개인:'#f4a96a',운동:'#a8c97a',학습:'#f7d97a',재무:'#f4b07a'};
+const CAT_BG_SUNSHINE={업무:'#fffbe0',개인:'#fff0e0',운동:'#f4fadf',학습:'#fffce8',재무:'#fff4e0'};
 function getCAT_COLOR(){
   if(theme==='peach') return CAT_COLOR_PEACH;
   if(theme==='dark')  return CAT_COLOR_DARK;
   if(theme==='forest') return CAT_COLOR_FOREST;
+  if(theme==='ocean') return CAT_COLOR_OCEAN;
+  if(theme==='midnight') return CAT_COLOR_MIDNIGHT;
+  if(theme==='sunshine') return CAT_COLOR_SUNSHINE;
   return CAT_COLOR_DEFAULT;
 }
 function getCAT_BG(){
   if(theme==='peach') return CAT_BG_PEACH;
   if(theme==='dark')  return CAT_BG_DARK;
   if(theme==='forest') return CAT_BG_FOREST;
+  if(theme==='ocean') return CAT_BG_OCEAN;
+  if(theme==='midnight') return CAT_BG_MIDNIGHT;
+  if(theme==='sunshine') return CAT_BG_SUNSHINE;
   return CAT_BG_DEFAULT;
 }
 // CAT_COLOR/CAT_BG는 렌더 시점에 getCAT_COLOR()/getCAT_BG()로 직접 호출
@@ -675,13 +720,17 @@ function deleteTodo(id){
 
 function applyTheme(t,skipSaveRender=false){
   theme=t;
-  document.body.className=t==='peach'?'theme-peach':t==='dark'?'theme-dark':t==='forest'?'theme-forest':'';
+  const cls={peach:'theme-peach',dark:'theme-dark',forest:'theme-forest',ocean:'theme-ocean',midnight:'theme-midnight',sunshine:'theme-sunshine'};
+  document.body.className=cls[t]||'';
   const btn=document.getElementById('theme-btn');
-  if(btn) btn.textContent=t==='peach'?'🌸':t==='dark'?'🌙':t==='forest'?'🌿':'🎨';
+  const ico={peach:'🌸',dark:'🌙',forest:'🌿',ocean:'🌊',midnight:'🔮',sunshine:'☀️'};
+  if(btn) btn.textContent=ico[t]||'🎨';
   if(!skipSaveRender){save();render();}
 }
 function toggleTheme(){
-  const next=theme==='default'?'peach':theme==='peach'?'dark':theme==='dark'?'forest':'default';
+  const order=['default','peach','dark','forest','ocean','midnight','sunshine'];
+  const idx=order.indexOf(theme);
+  const next=order[(idx+1)%order.length];
   applyTheme(next);
 }
 
@@ -689,6 +738,8 @@ function captureScreen(){
   const viewNames={list:'목록',dash:'대시보드',history:'이력',todo:'할일'};
   const btn=document.querySelector('[onclick="captureScreen()"]');
   if(btn) btn.style.opacity='0';
+  const captureBg={dark:'#0d1117',midnight:'#0f0b1e',peach:'#fff0f0',forest:'#f0f7f0',ocean:'#e8f4f8',sunshine:'#fffde7'};
+  const bgColor=captureBg[theme]||'#f4f6fb';
 
   // 이력 탭이면 통계+달성률현황 영역만 캡처
   let target;
@@ -700,7 +751,7 @@ function captureScreen(){
     if(!histMain||!captureArea){ if(btn) btn.style.opacity='1'; return; }
 
     const wrapper=document.createElement('div');
-    wrapper.style.cssText='background:#f4f6fb;padding:16px;display:inline-block;min-width:'+histMain.offsetWidth+'px;box-sizing:border-box;';
+    wrapper.style.cssText='background:'+bgColor+';padding:16px;display:inline-block;min-width:'+histMain.offsetWidth+'px;box-sizing:border-box;';
     document.body.appendChild(wrapper);
 
     // 연도 탭 클론
@@ -715,7 +766,7 @@ function captureScreen(){
     ca.style.marginTop='10px';
     wrapper.appendChild(ca);
 
-    html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:'#f4f6fb',scrollX:0,scrollY:0})
+    html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:bgColor,scrollX:0,scrollY:0})
     .then(canvas=>{
       document.body.removeChild(wrapper);
       const link=document.createElement('a');
@@ -739,13 +790,13 @@ function captureScreen(){
   target.scrollTop=0;
 
   const wrapper=document.createElement('div');
-  wrapper.style.cssText='background:#f4f6fb;padding:16px;display:inline-block;min-width:'+target.offsetWidth+'px';
+  wrapper.style.cssText='background:'+bgColor+';padding:16px;display:inline-block;min-width:'+target.offsetWidth+'px';
   document.body.appendChild(wrapper);
   const clone=target.cloneNode(true);
   clone.style.cssText='position:static;overflow:visible;height:auto;padding-bottom:16px;';
   wrapper.appendChild(clone);
 
-  html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:'#f4f6fb',scrollX:0,scrollY:0})
+  html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:bgColor,scrollX:0,scrollY:0})
   .then(canvas=>{
     document.body.removeChild(wrapper);
     target.scrollTop=scrollTop;
@@ -819,7 +870,7 @@ function renderDash(){
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 12px 16px 18px;gap:4px">
       <div style="font-size:12px;color:var(--sub);text-align:left">${t("avgPct")}</div>
       <div class="stat-val" style="font-size:36px;justify-content:flex-start">${avg}<sub style="font-size:16px">%</sub></div>
-      <div style="height:6px;background:#f0f0f0;border-radius:99px;overflow:hidden;margin-top:4px">
+      <div style="height:6px;background:var(--bar-track,#f0f0f0);border-radius:99px;overflow:hidden;margin-top:4px">
         <div style="height:100%;width:${Math.min(100,avg)}%;background:${avg>=100?'linear-gradient(90deg,#f5a623,#fbbf24)':avg>=60?'linear-gradient(90deg,#059669,#34d399)':'linear-gradient(90deg,#4248cc,#818cf8)'};border-radius:99px;transition:width 0.6s ease"></div>
       </div>
       <div style="font-size:11px;font-weight:600;color:${avg>=100?'#f5a623':avg>=60?'#059669':'#4248cc'};margin-top:2px">${haenaemMsg}</div>
@@ -920,7 +971,8 @@ function drawDonut(){
   // inner hole
   ctx.beginPath();
   ctx.arc(cx,cy,innerR,0,2*Math.PI);
-  ctx.fillStyle=theme==='dark'?'#161b22':theme==='peach'?'#fff8f6':theme==='forest'?'#ffffff':'#ffffff';
+  const holeColor={dark:'#161b22',peach:'#fff8f6',forest:'#ffffff',ocean:'#ffffff',midnight:'#1a1530',sunshine:'#ffffff'};
+  ctx.fillStyle=holeColor[theme]||'#ffffff';
   ctx.fill();
 }
 
@@ -1041,7 +1093,7 @@ function renderHistory(){
         <div class="hist-goal-header" onclick="toggleHistGoal('${gid}')">
           <div style="flex-shrink:0">
             <svg width="32" height="32" viewBox="0 0 44 44" style="transform:rotate(-90deg)">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="#f0f0f0" stroke-width="4"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="${ringTrack[theme]||'#f0f0f0'}" stroke-width="4"/>
               <circle cx="22" cy="22" r="18" fill="none" stroke="${color}" stroke-width="4"
                 stroke-dasharray="${(2*Math.PI*18).toFixed(1)}"
                 stroke-dashoffset="${(2*Math.PI*18*(1-disp/100)).toFixed(1)}"
@@ -1065,7 +1117,7 @@ function renderHistory(){
             ${g.current>=g.target?'✅ '+(lang==='ko'?'달성완료':'Achieved'):(lang==='ko'?'진행중':'In Progress')}
           </div>
           ${yrGoalLogs.length===0
-            ? `<div style="font-size:12px;color:var(--mute);padding:8px 0">이 연도에 기록이 없어요</div>`
+            ? `<div style="font-size:12px;color:var(--mute);padding:8px 0">${t('noYearLog')}</div>`
             : [...yrGoalLogs].reverse().map(l=>`
               <div class="hist-log-row">
                 <div class="hist-log-date">${l.date}</div>
@@ -1116,8 +1168,10 @@ function renderCard(g){
   // SVG ring: viewBox 고정(0 0 44 44), CSS로 크기 제어 → 깨짐 없음
   const dashTotal=2*Math.PI*18; // r=18
   const dashOffset=(dashTotal*(1-dispPct/100)).toFixed(1);
+  const ringTrack={dark:'#2d333b',midnight:'#2e2550'};
+  const ringTrackColor=ringTrack[theme]||'#f0f0f0';
   const ring=`<svg class="ring-svg" viewBox="0 0 44 44">
-    <circle cx="22" cy="22" r="18" fill="none" stroke="#f0f0f0" stroke-width="3.5"/>
+    <circle cx="22" cy="22" r="18" fill="none" stroke="${ringTrackColor}" stroke-width="3.5"/>
     <circle cx="22" cy="22" r="18" fill="none" stroke="${color}" stroke-width="3.5"
       stroke-dasharray="${dashTotal.toFixed(1)}" stroke-dashoffset="${dashOffset}" stroke-linecap="round"/>
   </svg>`;
@@ -1212,10 +1266,10 @@ function openAddModal(){
     </div>`);
 }
 function chkSave(){
-  const t=document.getElementById('f-title')?.value.trim();
+  const titleVal=document.getElementById('f-title')?.value.trim();
   const n=document.getElementById('f-target')?.value;
   const b=document.getElementById('btn-save');
-  if(b) b.disabled=!(t&&Number(n)>0);
+  if(b) b.disabled=!(titleVal&&Number(n)>0);
 }
 function saveAdd(){
   goals.unshift({id:genId(),
@@ -1390,7 +1444,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260531144000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260531160000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
