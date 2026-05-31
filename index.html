@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260531181000 -->
+<!DOCTYPE html><!-- v20260531191000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -563,7 +563,7 @@ const T={
     todo:'To Do', todoAdd:'+ Add Task', todoEmpty:'Add tasks for today', todoDone:'Done', todoUndone:'Undone', todoDeleteConfirm:'Delete this task?',
   }
 };
-function t(key,...args){ return T[lang][key]||T.ko[key]||key; }
+function t(key){ return (T[lang]&&T[lang][key])||T.ko[key]||key; }
 function toggleLang(){
   lang=lang==='ko'?'en':'ko';
   const btn=document.getElementById('lang-btn');
@@ -626,6 +626,86 @@ function getCAT_BG(){
   return CAT_BG_DEFAULT;
 }
 // CAT_COLOR/CAT_BG는 렌더 시점에 getCAT_COLOR()/getCAT_BG()로 직접 호출
+
+
+// ── 오늘의 명언 (60개, 한/영) ──────────────────────
+const QUOTES=[
+  {ko:"천 리 길도 한 걸음부터.",en:"A journey of a thousand miles begins with a single step."},
+  {ko:"작은 진전도 진전이다.",en:"A little progress each day adds up to big results."},
+  {ko:"오늘 할 수 있는 일을 내일로 미루지 마라.",en:"Don't put off till tomorrow what you can do today."},
+  {ko:"습관은 제2의 천성이다.",en:"Habit is second nature."},
+  {ko:"성공은 매일의 작은 노력이 쌓인 결과다.",en:"Success is the sum of small efforts repeated day in and day out."},
+  {ko:"포기하지 않는 한 실패는 없다.",en:"There is no failure except in no longer trying."},
+  {ko:"꿈꾸는 것을 믿어라. 그러면 이루어진다.",en:"Believe in your dreams and they may come true."},
+  {ko:"지금 이 순간이 시작할 가장 좋은 때다.",en:"The best time to start is now."},
+  {ko:"목표가 있는 사람은 길을 찾고, 없는 사람은 핑계를 찾는다.",en:"People with goals find ways, people without them find excuses."},
+  {ko:"꾸준함이 재능을 이긴다.",en:"Consistency beats talent."},
+  {ko:"오늘 힘든 것이 내일의 나를 만든다.",en:"Today's struggle builds tomorrow's strength."},
+  {ko:"시작이 반이다.",en:"Well begun is half done."},
+  {ko:"불가능이란 노력하지 않는 자의 변명이다.",en:"Impossible is just an excuse for those who won't try."},
+  {ko:"한 번에 한 걸음씩. 그것이 전진이다.",en:"One step at a time is all it takes to get you there."},
+  {ko:"나는 할 수 있다. 나는 해낼 것이다.",en:"I can. I will. End of story."},
+  {ko:"변화는 작은 결심에서 시작된다.",en:"Change begins with a small decision."},
+  {ko:"매일 조금씩 더 나아지면 된다.",en:"Get a little better every single day."},
+  {ko:"열정은 끝이 없다. 다만 에너지를 잘 써야 한다.",en:"Passion is endless. Use your energy wisely."},
+  {ko:"결과는 행동에서 나온다.",en:"Results come from action."},
+  {ko:"목표를 적으면 꿈이 계획이 된다.",en:"A goal written down becomes a plan."},
+  {ko:"어제보다 나은 오늘이면 충분하다.",en:"Being better than yesterday is enough."},
+  {ko:"성공한 사람들은 모두 꾸준히 했다.",en:"Successful people are simply those with successful habits."},
+  {ko:"포기하고 싶을 때 한 번만 더 해보자.",en:"When you want to quit, try one more time."},
+  {ko:"기록하지 않으면 개선할 수 없다.",en:"You can't improve what you don't track."},
+  {ko:"작은 승리가 큰 목표를 만든다.",en:"Small wins build big goals."},
+  {ko:"나의 유일한 경쟁자는 어제의 나다.",en:"My only competition is who I was yesterday."},
+  {ko:"한 걸음 더. 언제나 한 걸음 더.",en:"One more step. Always one more step."},
+  {ko:"좋은 습관은 가장 좋은 투자다.",en:"Good habits are the best investment."},
+  {ko:"힘들수록 해낸 후의 성취감은 더 크다.",en:"The harder the struggle, the greater the achievement."},
+  {ko:"자신을 믿는 것이 첫 번째 비결이다.",en:"Believe in yourself is the first secret to success."},
+  {ko:"목표는 꿈에 기한을 붙인 것이다.",en:"A goal is a dream with a deadline."},
+  {ko:"오늘의 나는 과거 습관의 결과다.",en:"Who you are today is the result of your past habits."},
+  {ko:"완벽하지 않아도 괜찮다. 꾸준한 것이 더 낫다.",en:"Done is better than perfect."},
+  {ko:"지금 당신의 선택이 미래를 만든다.",en:"Your choices today shape your future."},
+  {ko:"멈추지 않으면 언젠가 반드시 도달한다.",en:"If you never stop, you will eventually arrive."},
+  {ko:"동기는 시작하게 하고, 습관은 계속하게 한다.",en:"Motivation gets you started. Habit keeps you going."},
+  {ko:"성장은 불편함 속에 있다.",en:"Growth lives outside your comfort zone."},
+  {ko:"매일의 작은 선택이 결국 삶을 결정한다.",en:"Small daily choices ultimately determine your life."},
+  {ko:"실행 없는 비전은 꿈에 불과하다.",en:"A vision without action is just a dream."},
+  {ko:"노력은 배신하지 않는다.",en:"Hard work never betrays you."},
+  {ko:"끝까지 해내는 사람이 결국 이긴다.",en:"Those who finish always win."},
+  {ko:"오늘 심은 씨앗이 내일의 열매가 된다.",en:"Today's seeds become tomorrow's fruits."},
+  {ko:"작심삼일도 반복하면 습관이 된다.",en:"Even short bursts of effort, repeated, become habits."},
+  {ko:"진짜 동기는 내면에서 온다.",en:"True motivation comes from within."},
+  {ko:"목표를 향해 한 발씩 나아가라.",en:"Take it one step at a time toward your goal."},
+  {ko:"어떤 목표든 시작은 오늘이다.",en:"For any goal, the start is today."},
+  {ko:"자신과의 약속을 지키는 것이 자존감이다.",en:"Keeping promises to yourself builds self-esteem."},
+  {ko:"포기는 가장 쉬운 선택이다. 하지만 최선은 아니다.",en:"Giving up is the easiest option, but not the best."},
+  {ko:"1%의 개선이 37배의 성장을 만든다.",en:"1% better every day leads to 37x growth in a year."},
+  {ko:"무엇을 하느냐보다 매일 하느냐가 중요하다.",en:"What matters more than what you do is that you do it daily."},
+  {ko:"오늘 최선을 다하면 내일이 더 쉬워진다.",en:"Do your best today and tomorrow becomes easier."},
+  {ko:"한 가지에 집중하면 모든 것이 달라진다.",en:"Focus on one thing and everything changes."},
+  {ko:"당신은 생각보다 강하다.",en:"You are stronger than you think."},
+  {ko:"결심한 순간이 가장 중요한 순간이다.",en:"The moment you decide is the most important moment."},
+  {ko:"행동하는 사람이 세상을 바꾼다.",en:"People who act change the world."},
+  {ko:"지금 시작하면 이미 앞서 있다.",en:"Starting now already puts you ahead."},
+  {ko:"어렵다고 포기하지 말고, 어렵기 때문에 도전하라.",en:"Don't quit because it's hard. Try because it's hard."},
+  {ko:"나는 오늘도 한 걸음 나아간다.",en:"Today, I take one more step forward."},
+  {ko:"루틴이 결과를 만든다.",en:"Routines create results."},
+  {ko:"해낸다는 것은 포기하지 않는다는 것이다.",en:"To achieve is to never give up."},
+];
+
+function getTodayQuote(){
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,1);
+  const day=Math.floor((now-start)/86400000);
+  return QUOTES[Math.abs(day)%QUOTES.length];
+}
+function isQuoteDismissedToday(){
+  return localStorage.getItem('quoteDate')===new Date().toISOString().slice(0,10);
+}
+function dismissQuote(){
+  localStorage.setItem('quoteDate',new Date().toISOString().slice(0,10));
+  const el=document.getElementById('quote-card');
+  if(el){el.style.opacity='0';el.style.transform='translateY(-8px)';setTimeout(()=>el.remove(),300);}
+}
 
 let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='default';
 let cardScale=100;
@@ -827,7 +907,7 @@ function addTodo(){
 }
 
 function toggleTodo(id){
-  const td=todos.find(t=>t.id===id);
+  const td=todos.find(item=>item.id===id);
   if(!td) return;
   td.done=!td.done;
   td.doneAt=td.done?new Date().toISOString():null;
@@ -836,7 +916,7 @@ function toggleTodo(id){
 
 function deleteTodo(id){
   if(!confirm(lang==='ko'?'삭제할까요?':'Delete this task?')) return;
-  todos=todos.filter(t=>t.id!==id);
+  todos=todos.filter(item=>item.id!==id);
   save();render();
 }
 
@@ -985,6 +1065,26 @@ function renderDash(){
   const haenaemMsg = getHaenaemMsg(avg);
   const isComplete = avg >= 100;
   let h=`<div id="dash-main">`;
+  // 오늘의 명언 카드
+  if(!isQuoteDismissedToday()){
+    const q=getTodayQuote();
+    h+=`<div id="quote-card" style="
+      background:var(--card);border:1px solid var(--border);border-radius:16px;
+      padding:14px 16px;margin-bottom:10px;position:relative;
+      box-shadow:var(--shadow);transition:opacity .3s,transform .3s;
+    ">
+      <button onclick="dismissQuote()" style="
+        position:absolute;top:10px;right:12px;background:none;border:none;
+        font-size:16px;color:var(--muted2);cursor:pointer;line-height:1;padding:2px 4px;
+      ">✕</button>
+      <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:0.5px;margin-bottom:6px">
+        ✨ ${lang==='ko'?'오늘의 명언':'Quote of the Day'}
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);line-height:1.6">
+        "${lang==='ko'?q.ko:q.en}"
+      </div>
+    </div>`;
+  }
   h+=`<div class="stat-grid" style="grid-template-columns:repeat(2,1fr)">
     <div class="stat-card"><div class="stat-val">${total}${lang==='ko'?'<sub>개</sub>':''}</div><div class="stat-label">${t("totalKpi")}</div></div>
     <div class="stat-card"><div class="stat-val">${done}${lang==='ko'?'<sub>개</sub>':''}</div><div class="stat-label">${t("doneCnt")}</div></div>
@@ -1299,7 +1399,8 @@ function renderCard(g){
     dday=`<span style="font-size:var(--fsXS,9px);color:var(--accent2)">D-${startDiff} 시작</span>`;
   } else if(g.deadline){
     const diff=Math.ceil((parseLocalDate(g.deadline)-new Date())/86400000);
-    const col=diff<7?'#dc2626':getComputedStyle(document.body).getPropertyValue('--muted2').trim()||'#aaa';
+    const muted2=getComputedStyle(document.body).getPropertyValue('--muted2').trim()||'#94a3b8';
+    const col=diff<7?'#dc2626':muted2;
     dday=`<span style="font-size:var(--fsXS,9px);color:${col}">${diff>0?'D-'+diff:diff===0?(lang==='ko'?'오늘':'Today'):'D+'+Math.abs(diff)}</span>`;
   }
   // SVG ring: viewBox 고정(0 0 44 44), CSS로 크기 제어 → 깨짐 없음
@@ -1482,8 +1583,8 @@ function openLog(id){
 }
 function chkLog(){const v=document.getElementById('l-val')?.value;const b=document.getElementById('btn-log');if(b)b.disabled=!v;}
 function saveLog(id){
-  const val=parseFloat(document.getElementById('l-val').value)||0;
-  if(!val||val<=0){alert(lang==='ko'?'0보다 큰 값을 입력하세요':'Please enter a value greater than 0');return;}
+  const val=parseFloat(document.getElementById('l-val').value);
+  if(!val||isNaN(val)||val<=0){alert(lang==='ko'?'0보다 큰 값을 입력하세요':'Please enter a value greater than 0');return;}
   const note=document.getElementById('l-note').value.trim();
   const i=goals.findIndex(x=>x.id===id);
   if(i===-1) return;
@@ -1581,7 +1682,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260531181000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260531191000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
