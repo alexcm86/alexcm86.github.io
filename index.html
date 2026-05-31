@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260601130000 -->
+<!DOCTYPE html><!-- v20260601140000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -915,9 +915,7 @@ function toggleTodo(id){
 }
 
 function deleteTodo(id){
-  if(!confirm(lang==='ko'?'삭제할까요?':'Delete this task?')) return;
-  todos=todos.filter(item=>item.id!==id);
-  save();render();
+  confirmModal(lang==='ko'?'할일을 삭제할까요?':'Delete this task?',()=>{todos=todos.filter(item=>item.id!==id);save();render();});
 }
 
 
@@ -1479,7 +1477,7 @@ function initDrag(){
 }
 
 /* ── CRUD ── */
-function delGoal(id){if(confirm(t('deleteConfirm'))){goals=goals.filter(g=>g.id!==id);save();render();}}
+function delGoal(id){confirmModal(lang==='ko'?'KPI를 삭제할까요?':'Delete this KPI?',()=>{goals=goals.filter(g=>g.id!==id);save();render();});}
 
 function openAddModal(){
   showModal(`<div class="modal-title">${t("addTitle")}</div>
@@ -1622,13 +1620,14 @@ function editLog(gid,idx){
   };
 }
 function delLog(gid,idx){
-  if(!confirm(lang==='ko'?'이 기록을 삭제할까요?':'Delete this record?'))return;
-  const g=goals.find(x=>x.id===gid);
-  if(!g) return;
-  g.logs.splice(idx,1);
-  g.current=g.logs.reduce(function(s,l){return s+l.value;},0);
-  save();render();closeModal();
-  setTimeout(function(){openHist(gid);},150);
+  confirmModal(lang==='ko'?'이 기록을 삭제할까요?':'Delete this record?',()=>{
+    const g=goals.find(x=>x.id===gid);
+    if(!g) return;
+    g.logs.splice(idx,1);
+    g.current=g.logs.reduce(function(s,l){return s+l.value;},0);
+    save();render();closeModal();
+    setTimeout(function(){openHist(gid);},150);
+  });
 }
 function openHist(id){
   const g=goals.find(x=>x.id===id);
@@ -1674,6 +1673,22 @@ function openHist(id){
     });
   },50);
 }
+function confirmModal(msg, onConfirm){
+  closeModal();
+  const ov=document.createElement('div');
+  ov.className='overlay';
+  ov.id='modal-ov';
+  ov.innerHTML=`<div class="modal-box" style="max-width:300px;text-align:center">
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">${msg}</div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-cancel" onclick="closeModal()" style="flex:1">${lang==='ko'?'취소':'Cancel'}</button>
+      <button class="btn-save" id="confirm-ok" style="flex:1;background:var(--red)">${lang==='ko'?'삭제':'Delete'}</button>
+    </div>
+  </div>`;
+  ov.addEventListener('click',e=>{if(e.target===ov)closeModal();});
+  document.body.appendChild(ov);
+  document.getElementById('confirm-ok').onclick=function(){closeModal();onConfirm();};
+}
 function showModal(html,sheet=false){
   closeModal();
   const ov=document.createElement('div');
@@ -1687,7 +1702,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260601130000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601140000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
