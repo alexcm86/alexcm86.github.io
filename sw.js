@@ -1,6 +1,18 @@
-/* v20260530000000 */
-const CACHE = 'v20260530000000';
-const URLS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+/* v20260531144000 */
+const CACHE = 'v20260531144000';
+const URLS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/1.png',
+  '/2.png',
+  '/3.png',
+  '/4.png',
+  '/5.png',
+  '/6.png'
+];
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -12,8 +24,6 @@ self.addEventListener('activate', e => {
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({type:'window',includeUncontrolled:true}))
-      .then(clients => clients.forEach(c => c.navigate(c.url)))
   );
 });
 
