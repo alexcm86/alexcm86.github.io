@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260531191000 -->
+<!DOCTYPE html><!-- v20260601130000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -393,9 +393,6 @@
   .hist-log-note{color:var(--sub);flex:1;font-size:12px}
   .hist-mini-bar{height:4px;background:var(--bar-track,#f0f0f0);border-radius:99px;overflow:hidden;margin:8px 0 4px}
   .hist-mini-fill{height:100%;border-radius:99px}
-  .year-block{margin-bottom:4px}
-  .year-content{display:none}
-  .year-content.open{display:block}
   .no-history{text-align:center;padding:50px 0;color:var(--mute)}
 
   /* 연도 탭 선택 */
@@ -412,7 +409,6 @@
   .year-chip.active{background:var(--accent-bg);border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-border);color:var(--accent2)}
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes slideUpB{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 </style>
 <!-- Google AdSense -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8440663734931688" crossorigin="anonymous"></script>
@@ -519,13 +515,12 @@ const T={
     catLbl:'카테고리', unitLbl:'단위', unitPh:'만원, km, 건...',
     targetLbl:'목표 수치 *', startLbl:'시작일', deadlineLbl:'마감일', noteLbl:'메모', notePh:'추가 메모',
     cancel:'취소', save:'저장',
-    logTitle:'진행 기록', logLbl:'달성 수치 입력', logPh:'+값 입력', logNote:'오늘의 기록...', logBtn:'기록',
+    logTitle:'진행 기록', logLbl:'달성 수치 입력', logPh:'+값 입력', logNote:'오늘의 기록...', logBtn:'기록', logDate:'기록 날짜',
     histTitle:'📋 히스토리', noLog:'아직 기록이 없어요', close:'닫기',
     totalKpi:'전체 KPI', doneKpi:'달성 완료', avgPct:'평균 진행률',
     overview:'🔵 전체 현황', rankTitle:'🏆 달성률 전체 순위', ddayTitle:'⏰ 마감 임박',
     empty:'아직 KPI가 없어요', emptyList:'KPI를 추가해 목표를 관리하세요',
     sortPct:'📊 달성률순', sortManual:'✋ 수동순',
-    cats:['업무','개인','운동','학습','재무'],
     avg:'평균', today:'오늘 마감',
     regKpi:'등록 KPI', doneCnt:'달성 완료', totalLog:'총 기록',
     noHistory:'아직 KPI가 없어요', noYearData:'년 데이터가 없어요',
@@ -544,13 +539,12 @@ const T={
     catLbl:'Category', unitLbl:'Unit', unitPh:'km, times, $...',
     targetLbl:'Target *', startLbl:'Start Date', deadlineLbl:'Deadline', noteLbl:'Note', notePh:'Additional note',
     cancel:'Cancel', save:'Save',
-    logTitle:'Log Progress', logLbl:'Enter value', logPh:'+value', logNote:"Today's note...", logBtn:'Log',
+    logTitle:'Log Progress', logLbl:'Enter value', logPh:'+value', logNote:"Today's note...", logBtn:'Log', logDate:'Date',
     histTitle:'📋 History', noLog:'No records yet', close:'Close',
     totalKpi:'Total KPI', doneKpi:'Achieved', avgPct:'Avg Progress',
     overview:'🔵 Overview', rankTitle:'🏆 Full Rankings', ddayTitle:'⏰ Deadline Soon',
     empty:'No KPIs yet', emptyList:'Add a KPI to track your goals',
     sortPct:'📊 By Progress', sortManual:'✋ Manual',
-    cats:['Work','Personal','Exercise','Study','Finance'],
     avg:'avg', today:'Due today',
     regKpi:'KPIs', doneCnt:'Achieved', totalLog:'Records',
     noHistory:'No KPIs yet', noYearData:' no data',
@@ -829,10 +823,16 @@ function renderTodo(){
 
   // 오늘 섹션 (상단 고정)
   h+=`<div class="todo-date">${formatDateLabel(todayStr)}</div>`;
+  const kpiOptions=goals.length
+    ?`<option value="">${lang==='ko'?'KPI 연결 안함':'No KPI link'}</option>`+goals.map(g=>`<option value="${g.id}">${esc(g.title)}</option>`).join('')
+    :'';
   h+=`<div class="todo-add-bar">
     <input class="todo-input" id="todo-input" type="text" placeholder="${lang==='ko'?'오늘 할일 입력...':'Add a task for today...'}" onkeydown="if(event.key==='Enter')addTodo()">
     <button class="todo-add-btn" onclick="addTodo()">${lang==='ko'?'추가':'Add'}</button>
   </div>`;
+  if(goals.length){
+    h+=`<select class="todo-kpi-select" id="todo-kpi-select" style="margin-bottom:12px">${kpiOptions}</select>`;
+  }
 
 
   const todayItems=dateMap[todayStr]||[];
@@ -1571,6 +1571,8 @@ function openLog(id){
       <b>${esc(g.title)}</b><br>
       ${lang==='ko'?'현재':'Current'} <b>${fmt(g.current)}</b> / ${lang==='ko'?'목표':'Target'} <b>${fmt(g.target)} ${esc(g.unit)}</b>
     </div>
+    <label>${t('logDate')}</label>
+    <input id="l-date" type="date" value="${today()}" style="margin-bottom:4px">
     <label>${t("logLbl")}</label>
     <input id="l-val" type="number" placeholder="${t('logPh')}" oninput="chkLog()">
     <label>${t("noteLbl")}</label>
@@ -1588,7 +1590,8 @@ function saveLog(id){
   const note=document.getElementById('l-note').value.trim();
   const i=goals.findIndex(x=>x.id===id);
   if(i===-1) return;
-  goals[i].logs.push({date:today(),value:val,note});
+  const logDate=document.getElementById('l-date')?.value||today();
+  goals[i].logs.push({date:logDate,value:val,note});
   goals[i].current=goals[i].logs.reduce(function(s,l){return s+l.value;},0);
   save();closeModal();render();
 }
@@ -1651,8 +1654,10 @@ function openHist(id){
         +'</div>';
     });
   }
+  const noteHtml=g.note?`<div style="font-size:11px;color:var(--sub);background:var(--accent-bg);border-radius:8px;padding:6px 10px;margin-bottom:10px">📝 ${esc(g.note)}</div>`:'';
   showModal('<div class="modal-title">'+t('histTitle')+'</div>'
-    +'<div style="font-size:12px;color:var(--sub);margin-bottom:12px">'+esc(g.title)+'</div>'
+    +'<div style="font-size:12px;color:var(--sub);margin-bottom:8px">'+esc(g.title)+'</div>'
+    +noteHtml
     +'<div style="overflow-y:auto;max-height:260px">'+rows+'</div>'
     +'<button class="btn-full" id="histClose">'+t('close')+'</button>'
     ,true);
@@ -1682,7 +1687,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260531191000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601130000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
