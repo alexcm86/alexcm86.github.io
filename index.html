@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260601240000 -->
+<!DOCTYPE html><!-- v20260601250000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -772,16 +772,16 @@ function load(){
 }
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
 
-/* ── 광고 24시간 숨김 ── */
+/* ── 광고 숨김 (세션 동안만 유지, 앱 종료 시 초기화) ── */
 const AD_HIDE_KEY='ad_hide_until';
 function isAdHidden(){
-  const until=localStorage.getItem(AD_HIDE_KEY);
+  const until=sessionStorage.getItem(AD_HIDE_KEY);
   if(!until) return false;
   return Date.now() < Number(until);
 }
 function hideAdFor24h(){
   const until=Date.now()+24*60*60*1000;
-  localStorage.setItem(AD_HIDE_KEY, String(until));
+  sessionStorage.setItem(AD_HIDE_KEY, String(until));
   applyAdVisibility();
 }
 function applyAdVisibility(){
@@ -1771,7 +1771,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260601240000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601250000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
