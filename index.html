@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260601250000 -->
+<!DOCTYPE html><!-- v20260601260000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -424,12 +424,13 @@
     <button class="tab-btn" id="tab-hist" onclick="switchView('history')">이력</button>
     <button class="tab-btn" id="tab-todo" onclick="switchView('todo')">할일</button>
   </div>
-  <button onclick="toggleLang()" id="lang-btn" style="
-    padding:3px 8px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
-    background:transparent;color:#fff;font-size:11px;font-weight:700;
-    font-family:inherit;cursor:pointer;flex-shrink:0;letter-spacing:0.3px;
-    transition:all .15s;
-  ">KO</button>
+  <button onclick="toggleLang()" id="lang-btn" title="언어" style="
+    padding:0;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:16px;
+    font-family:inherit;cursor:pointer;flex-shrink:0;
+    transition:all .15s;width:28px;height:28px;
+    display:flex;align-items:center;justify-content:center;
+  ">🌐</button>
   <button onclick="exportData()" id="btn-export" title="백업" style="
     padding:0;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
     background:transparent;cursor:pointer;flex-shrink:0;transition:all .15s;
@@ -599,8 +600,6 @@ const T={
 function t(key){ return (T[lang]&&T[lang][key])||T.ko[key]||key; }
 function toggleLang(){
   lang=lang==='ko'?'en':'ko';
-  const btn=document.getElementById('lang-btn');
-  if(btn) btn.textContent=lang==='ko'?'KO':'EN';
   const logo=document.querySelector('.logo');
   if(logo){
     logo.innerHTML=lang==='ko'?'해<span>냄</span>':'DID <span>IT</span>';
@@ -1771,7 +1770,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260601250000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601260000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
@@ -1791,9 +1790,6 @@ if('serviceWorker' in navigator){
 }
 
 load();
-// 언어 버튼 초기 상태
-const _lb=document.getElementById('lang-btn');
-if(_lb) _lb.textContent=lang==='ko'?'KO':'EN';
 const _tl=T[lang];
 const _tli=document.getElementById('tab-list');
 const _tdi=document.getElementById('tab-dash');
