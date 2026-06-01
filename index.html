@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260601220000 -->
+<!DOCTYPE html><!-- v20260601230000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -254,6 +254,7 @@
 
   /* FAB */
   #fab{position:fixed;bottom:calc(76px + var(--safe-bottom));right:18px;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent3));color:#fff;border:none;font-size:22px;box-shadow:0 4px 20px rgba(0,0,0,0.25),0 0 0 3px rgba(255,255,255,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,opacity .3s;z-index:20;opacity:1;}
+  #fab.ad-visible{bottom:calc(76px + 68px + var(--safe-bottom));}
   #fab.hidden{opacity:0;pointer-events:none}
   #fab:active{transform:scale(0.9)}
 
@@ -458,17 +459,23 @@
 </div>
 
 <div id="main"></div>
-<!-- 배너 광고 영역 (목록/대시보드에서만 표시) -->
+<!-- 배너 광고 영역 -->
 <div id="ad-banner" style="
   position:fixed;bottom:0;left:50%;transform:translateX(-50%);
   width:100%;max-width:480px;
   background:#fff;border-top:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
   padding:6px 8px;z-index:15;
-  min-height:60px;
+  min-height:68px;
 ">
-  <!-- AdSense 배너 광고 -->
-  <!-- ca-pub-XXXXXXXXXXXXXXXX 와 data-ad-slot 을 실제 값으로 교체 -->
+  <!-- 24시간 숨기기 버튼 -->
+  <button id="ad-close-btn" onclick="hideAdFor24h()" style="
+    position:absolute;top:4px;right:6px;
+    background:rgba(0,0,0,0.12);border:none;border-radius:50%;
+    width:18px;height:18px;font-size:10px;color:#888;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    line-height:1;z-index:16;padding:0;
+  ">✕</button>
   <ins class="adsbygoogle"
        style="display:block;width:100%;max-width:468px;height:60px"
        data-ad-client="ca-pub-8440663734931688"
@@ -764,6 +771,31 @@ function load(){
   }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='military';applyTheme('military',true);}
 }
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
+
+/* ── 광고 24시간 숨김 ── */
+const AD_HIDE_KEY='ad_hide_until';
+function isAdHidden(){
+  const until=localStorage.getItem(AD_HIDE_KEY);
+  if(!until) return false;
+  return Date.now() < Number(until);
+}
+function hideAdFor24h(){
+  const until=Date.now()+24*60*60*1000;
+  localStorage.setItem(AD_HIDE_KEY, String(until));
+  applyAdVisibility();
+}
+function applyAdVisibility(){
+  const banner=document.getElementById('ad-banner');
+  const fab=document.getElementById('fab');
+  if(!banner) return;
+  if(isAdHidden()){
+    banner.style.display='none';
+    if(fab) fab.classList.remove('ad-visible');
+  } else {
+    banner.style.display='flex';
+    if(fab) fab.classList.add('ad-visible');
+  }
+}}
 function exportData(){
   const data=JSON.stringify({goals,todos,scale:cardScale,lang,theme},null,2);
   const blob=new Blob([data],{type:'application/json'});
@@ -1739,7 +1771,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260601220000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601230000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
@@ -1771,7 +1803,7 @@ if(_tli) _tli.textContent=_tl.list;
 if(_tdi) _tdi.textContent=_tl.dash;
 if(_thi) _thi.textContent=_tl.hist;
 if(_tti) _tti.textContent=_tl.todo;
-render(); resetFabTimer();
+render(); resetFabTimer(); applyAdVisibility();
 </script>
 </body>
 </html>
