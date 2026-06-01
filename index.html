@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260601230000 -->
+<!DOCTYPE html><!-- v20260601240000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -795,7 +795,7 @@ function applyAdVisibility(){
     banner.style.display='flex';
     if(fab) fab.classList.add('ad-visible');
   }
-}}
+}
 function exportData(){
   const data=JSON.stringify({goals,todos,scale:cardScale,lang,theme},null,2);
   const blob=new Blob([data],{type:'application/json'});
@@ -1771,7 +1771,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260601230000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601240000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
