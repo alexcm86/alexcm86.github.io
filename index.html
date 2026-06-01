@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602100000 -->
+<!DOCTYPE html><!-- v20260602110000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -528,11 +528,20 @@ const HAENAEM_IMGS_OCEAN = [
   'https://alexcm86.github.io/o5.png', // S5 산호 만세 (80~99%)
   'https://alexcm86.github.io/o6.png', // S6 산호 꽃 만개 (100%)
 ];
+const HAENAEM_IMGS_DARK = [
+  'https://alexcm86.github.io/d1.png', // S1 로봇 수면 (0~19%)
+  'https://alexcm86.github.io/d2.png', // S2 로봇 미소 (20~39%)
+  'https://alexcm86.github.io/d3.png', // S3 로봇 윙크 (40~59%)
+  'https://alexcm86.github.io/d4.png', // S4 로봇 파이팅 (60~79%)
+  'https://alexcm86.github.io/d5.png', // S5 로봇 만세 (80~99%)
+  'https://alexcm86.github.io/d6.png', // S6 로봇 해바라기 (100%)
+];
 function getHaenaemImgs() {
   if (theme === 'military') return HAENAEM_IMGS_MILITARY;
   if (theme === 'peach') return HAENAEM_IMGS_PEACH;
   if (theme === 'midnight') return HAENAEM_IMGS_MIDNIGHT;
   if (theme === 'ocean') return HAENAEM_IMGS_OCEAN;
+  if (theme === 'dark') return HAENAEM_IMGS_DARK;
   return HAENAEM_IMGS;
 }
 
@@ -1779,7 +1788,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602100000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602110000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
