@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260601180000 -->
+<!DOCTYPE html><!-- v20260601200000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -430,17 +430,19 @@
     transition:all .15s;
   ">KO</button>
   <button onclick="exportData()" id="btn-export" title="백업" style="
-    padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
-    background:transparent;color:#fff;font-size:13px;
+    padding:0;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:16px;
     font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
-    height:28px;display:flex;align-items:center;justify-content:center;
-  ">⬇</button>
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+    line-height:1;
+  ">↓</button>
   <label id="btn-import" title="복원" style="
-    padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
-    background:transparent;color:#fff;font-size:13px;
+    padding:0;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:16px;
     cursor:pointer;flex-shrink:0;transition:all .15s;
-    height:28px;display:flex;align-items:center;justify-content:center;
-  ">⬆<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+    line-height:1;
+  ">↑<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
   <button onclick="toggleTheme()" id="theme-btn" title="테마" style="
     padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
     background:transparent;color:#fff;font-size:14px;
@@ -755,9 +757,10 @@ function fmt(n){
 
 function load(){
   try{
-    const d=JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) throw new Error('empty');
+    const d=JSON.parse(raw);
     goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'military'; applyTheme(theme,true);
-
   }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='military';applyTheme('military',true);}
 }
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
@@ -794,7 +797,7 @@ function importData(e){
   reader.readAsText(file);
   e.target.value='';
 }
-function genId(){return Math.random().toString(36).slice(2,9);}
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function parseLocalDate(s){if(!s)return null;const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -814,7 +817,9 @@ function render(){
 
 
 function formatDateLabel(dateStr){
+  if(!dateStr||typeof dateStr!=='string'||!dateStr.includes('-')) return dateStr||'';
   const [y,m,d]=dateStr.split('-').map(Number);
+  if(!y||!m||!d) return dateStr;
   const dt=new Date(y,m-1,d);
   const dayNames=lang==='ko'?['일','월','화','수','목','금','토']:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   return lang==='ko'
@@ -827,7 +832,8 @@ function renderTodoItems(items, isHistory){
   items.forEach(td=>{
     const kpiName=td.kpiId?goals.find(g=>g.id===td.kpiId)?.title:'';
     const isDone=td.done;
-    h+=`<div class="todo-item${isDone?' done':''}" onclick="${isHistory?'':` toggleTodo('${td.id}')`}">
+    const clickAttr=isHistory?'':` onclick="toggleTodo('${td.id}')"`;
+    h+=`<div class="todo-item${isDone?' done':''}"${clickAttr}>
       <div class="todo-check"><span class="todo-check-icon">✓</span></div>
       <div class="todo-text">${esc(td.text)}</div>
       ${kpiName?`<span class="todo-kpi-tag">🎯 ${esc(kpiName)}</span>`:''}
@@ -967,7 +973,7 @@ function toggleTheme(){
 
 function captureScreen(){
   const viewNames={list:'목록',dash:'대시보드',history:'이력',todo:'할일'};
-  const btn=document.querySelector('[onclick="captureScreen()"]');
+  const btn=document.getElementById('btn-capture');
   if(btn) btn.style.opacity='0';
   const captureBg={dark:'#0d1117',midnight:'#0f0b1e',peach:'#fff0f0',forest:'#f0f7f0',ocean:'#e8f4f8',sunshine:'#fffde7',military:'#1e2118'};
   const bgColor=captureBg[theme]||'#f4f6fb';
@@ -1080,7 +1086,7 @@ function renderDash(){
   const avg=total?Math.round(goals.reduce((s,g)=>s+Math.min(100,pctVal(g)),0)/total):0;
   const byCat=CATS.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
   const sorted=[...goals].sort((a,b)=>pctVal(b)-pctVal(a));
-  const urgent=goals.filter(g=>g.deadline).map(g=>{
+  const urgent=goals.filter(g=>g.deadline&&/^\d{4}-\d{2}-\d{2}$/.test(g.deadline)).map(g=>{
     const [dy,dm,dd]=g.deadline.split('-').map(Number);
     const deadlineMs=new Date(dy,dm-1,dd).setHours(0,0,0,0);
     const todayMs=new Date().setHours(0,0,0,0);
@@ -1263,7 +1269,7 @@ function renderHistory(){
     if(g.createdAt) yearSet.add(g.createdAt.slice(0,4));
     (g.logs||[]).forEach(l=>{ if(l.date) yearSet.add(l.date.slice(0,4)); });
   });
-  const years=[...yearSet].sort((a,b)=>b-a);
+  const years=[...yearSet].sort((a,b)=>Number(b)-Number(a));
   const curYear=new Date().getFullYear().toString();
   if(!histYear || !yearSet.has(histYear)) histYear = years[0]||curYear;
   if(!years.length) years.push(curYear);
@@ -1612,7 +1618,9 @@ function openLog(id){
 }
 function chkLog(){const v=document.getElementById('l-val')?.value;const b=document.getElementById('btn-log');if(b)b.disabled=!v;}
 function saveLog(id){
-  const val=parseFloat(document.getElementById('l-val').value);
+  const valEl=document.getElementById('l-val');
+  if(!valEl) return;
+  const val=parseFloat(valEl.value);
   if(!val||isNaN(val)||val<=0){alert(lang==='ko'?'0보다 큰 값을 입력하세요':'Please enter a value greater than 0');return;}
   const note=document.getElementById('l-note').value.trim();
   const i=goals.findIndex(x=>x.id===id);
@@ -1731,7 +1739,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260601180000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601200000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
