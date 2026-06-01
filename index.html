@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260601160000 -->
+<!DOCTYPE html><!-- v20260601170000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -494,8 +494,18 @@ const HAENAEM_IMGS_MILITARY = [
   'https://alexcm86.github.io/m5.png', // S5 전투복 만세 (80~99%)
   'https://alexcm86.github.io/m6.png', // S6 꽃 만개 (100%)
 ];
+const HAENAEM_IMGS_PEACH = [
+  'https://alexcm86.github.io/p1.png', // S1 새싹 핑크 (0~19%)
+  'https://alexcm86.github.io/p2.png', // S2 미소 (20~39%)
+  'https://alexcm86.github.io/p3.png', // S3 손 흔들기 (40~59%)
+  'https://alexcm86.github.io/p4.png', // S4 윙크 응원 (60~79%)
+  'https://alexcm86.github.io/p5.png', // S5 만세 (80~99%)
+  'https://alexcm86.github.io/p6.png', // S6 꽃 만개 (100%)
+];
 function getHaenaemImgs() {
-  return theme === 'military' ? HAENAEM_IMGS_MILITARY : HAENAEM_IMGS;
+  if (theme === 'military') return HAENAEM_IMGS_MILITARY;
+  if (theme === 'peach') return HAENAEM_IMGS_PEACH;
+  return HAENAEM_IMGS;
 }
 
 function getHaenaemStage(avg) {
@@ -1712,7 +1722,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260601160000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601170000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
