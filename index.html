@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260601200000 -->
+<!DOCTYPE html><!-- v20260601220000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -431,29 +431,29 @@
   ">KO</button>
   <button onclick="exportData()" id="btn-export" title="백업" style="
     padding:0;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
-    background:transparent;color:#fff;font-size:16px;
-    font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
+    background:transparent;cursor:pointer;flex-shrink:0;transition:all .15s;
     width:28px;height:28px;display:flex;align-items:center;justify-content:center;
-    line-height:1;
-  ">↓</button>
+  "><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 1v8M3.5 6l3.5 4 3.5-4M1 11h12" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg></button>
   <label id="btn-import" title="복원" style="
     padding:0;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
-    background:transparent;color:#fff;font-size:16px;
-    cursor:pointer;flex-shrink:0;transition:all .15s;
+    background:transparent;cursor:pointer;flex-shrink:0;transition:all .15s;
     width:28px;height:28px;display:flex;align-items:center;justify-content:center;
-    line-height:1;
-  ">↑<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+  "><svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 13V5M3.5 8l3.5-4 3.5 4M1 3h12" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg><input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
   <button onclick="toggleTheme()" id="theme-btn" title="테마" style="
-    padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
-    background:transparent;color:#fff;font-size:14px;
+    padding:0;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:15px;
     font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
-    height:28px;display:flex;align-items:center;justify-content:center;
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;
   ">🎨</button>
   <button onclick="captureScreen()" id="btn-capture" title="캡처" style="
-    padding:0 5px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
-    background:transparent;color:#fff;font-size:14px;
+    padding:0;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
+    background:transparent;color:#fff;font-size:15px;
     font-family:inherit;cursor:pointer;flex-shrink:0;transition:all .15s;
-    height:28px;display:flex;align-items:center;justify-content:center;
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;
   ">📷</button>
 </div>
 
@@ -1739,7 +1739,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260601200000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601220000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
