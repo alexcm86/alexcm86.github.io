@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260601140000 -->
+<!DOCTYPE html><!-- v20260601150000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="해냄">
-<meta name="theme-color" content="#4248cc">
+<meta name="theme-color" content="#2d3422">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <title>해냄</title>
@@ -486,6 +486,17 @@ const HAENAEM_IMGS = [
   'https://alexcm86.github.io/5.png', // S5 파이팅 만세 (80~99%)
   'https://alexcm86.github.io/6.png', // S6 꽃 만개 (100%)
 ];
+const HAENAEM_IMGS_MILITARY = [
+  'https://alexcm86.github.io/m1.png', // S1 새싹 군인 (0~19%)
+  'https://alexcm86.github.io/m2.png', // S2 군모 미소 (20~39%)
+  'https://alexcm86.github.io/m3.png', // S3 군모+새싹2개 (40~59%)
+  'https://alexcm86.github.io/m4.png', // S4 전투복+새싹3개 (60~79%)
+  'https://alexcm86.github.io/m5.png', // S5 전투복 만세 (80~99%)
+  'https://alexcm86.github.io/m6.png', // S6 꽃 만개 (100%)
+];
+function getHaenaemImgs() {
+  return theme === 'military' ? HAENAEM_IMGS_MILITARY : HAENAEM_IMGS;
+}
 
 function getHaenaemStage(avg) {
   if (avg >= 100) return 5; // S6 (꽃 만개 - 완전달성)
@@ -701,7 +712,7 @@ function dismissQuote(){
   if(el){el.style.opacity='0';el.style.transform='translateY(-8px)';setTimeout(()=>el.remove(),300);}
 }
 
-let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='default';
+let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='military';
 let cardScale=100;
 const SCALE_STEP=5, SCALE_MIN=40, SCALE_MAX=100;
 
@@ -726,9 +737,9 @@ function fmt(n){
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(STORAGE_KEY));
-    goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'default'; applyTheme(theme,true);
+    goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'military'; applyTheme(theme,true);
 
-  }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='default';applyTheme('default',true);}
+  }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='military';applyTheme('military',true);}
 }
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
 function exportData(){
@@ -1059,7 +1070,7 @@ function renderDash(){
   }).filter(g=>g.diff>=0&&g.diff<=30).sort((a,b)=>a.diff-b.diff);
 
   const haenaemIdx = getHaenaemStage(avg);
-  const haenaemSrc = HAENAEM_IMGS[haenaemIdx];
+  const haenaemSrc = getHaenaemImgs()[haenaemIdx];
   const haenaemMsg = getHaenaemMsg(avg);
   const isComplete = avg >= 100;
   let h=`<div id="dash-main">`;
@@ -1702,7 +1713,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260601140000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260601150000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
