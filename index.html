@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602280000 -->
+<!DOCTYPE html><!-- v20260602290000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1136,34 +1136,13 @@ function captureScreen(){
       overrides.forEach(({target,saved})=>Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }));
     }
 
-    // ① 스타일 변경 전: img 위치 + 부모 컨테이너 기록
-    const elRect=el.getBoundingClientRect();
-    const imgInfos=[];
-    el.querySelectorAll('img').forEach(img=>{
-      const r=img.getBoundingClientRect();
-      // img의 부모 컨테이너(overflow:hidden 포함)를 캡처 타겟으로 사용
-      const container=img.parentElement||img;
-      const cr=container.getBoundingClientRect();
-      imgInfos.push({
-        container,
-        x: Math.round(cr.left - elRect.left),
-        y: Math.round(cr.top  - elRect.top),
-        w: Math.round(cr.width),
-        h: Math.round(cr.height),
-        imgX: Math.round(r.left - cr.left),
-        imgY: Math.round(r.top  - cr.top),
-        imgW: Math.round(r.width),
-        imgH: Math.round(r.height),
-      });
-    });
-
-    // ② 스크롤 컨테이너 여백 제거
+    // 스크롤 컨테이너 여백 제거
     el.querySelectorAll('#dash-main,#card-list,#history-main,#todo-main').forEach(e=>
       applyOverride(e,{overflow:'visible',height:'auto',maxHeight:'none',paddingBottom:'0'})
     );
     applyOverride(el,{overflow:'visible',height:'auto',paddingBottom:'0',...extraStyles});
 
-    // ③ 콘텐츠 실제 높이 계산
+    // 콘텐츠 실제 높이 계산
     let contentBottom=0;
     el.querySelectorAll('#dash-main>*,#card-list>*,#history-main>*,#todo-main>*').forEach(child=>{
       const b=child.getBoundingClientRect().bottom - el.getBoundingClientRect().top;
@@ -1176,41 +1155,17 @@ function captureScreen(){
       });
     }
     const captureH=Math.ceil(contentBottom)+16;
-    const sc=2;
 
-    // ④ 전체 캡처(img 제외) + 각 img 컨테이너 개별 캡처를 병렬로
-    const mainCapture=html2canvas(el,{
-      useCORS:true, scale:sc, backgroundColor:bgColor,
+    html2canvas(el,{
+      useCORS:true, allowTaint:true, scale:2, backgroundColor:bgColor,
       scrollX:0, scrollY:0, logging:false,
-      width:el.offsetWidth, height:captureH,
-      ignoreElements: e=>e.tagName==='IMG'
-    });
-
-    // img 컨테이너를 각각 html2canvas로 캡처 (same-origin DOM이라 tainted 없음)
-    const containerCaptures=imgInfos.map(info=>
-      html2canvas(info.container,{
-        useCORS:true, scale:sc, backgroundColor:null,
-        scrollX:0, scrollY:0, logging:false
-      }).then(c=>({canvas:c, info})).catch(()=>null)
-    );
-
-    Promise.all([mainCapture, Promise.all(containerCaptures)])
-    .then(([mainCanvas, containerResults])=>{
+      width:el.offsetWidth, height:captureH
+    }).then(srcCanvas=>{
       restoreAll();
       if(btn) btn.style.opacity='1';
-
-      // ⑤ 컨테이너 캡처를 메인 canvas 위에 합성
-      const ctx=mainCanvas.getContext('2d');
-      containerResults.forEach(result=>{
-        if(!result) return;
-        const {canvas:cc, info}=result;
-        ctx.drawImage(cc, info.x*sc, info.y*sc, info.w*sc, info.h*sc);
-      });
-
-      const final=addWatermark(mainCanvas);
+      const final=addWatermark(srcCanvas);
       openShareSheet(final.toDataURL('image/png'), fileBaseName, final);
-    })
-    .catch(()=>{
+    }).catch(()=>{
       restoreAll();
       if(btn) btn.style.opacity='1';
       alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
@@ -2002,7 +1957,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602280000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602290000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
