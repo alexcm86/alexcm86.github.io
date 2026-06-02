@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602180000 -->
+<!DOCTYPE html><!-- v20260602190000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1177,15 +1177,28 @@ function captureScreen(){
     wrapper.style.cssText='background:'+bgColor+';padding:16px;display:inline-block;min-width:'+target.offsetWidth+'px';
     document.body.appendChild(wrapper);
     const clone=target.cloneNode(true);
-    // 불필요한 하단 여백 제거
-    clone.style.cssText='position:static;overflow:visible;height:auto;padding-bottom:0;';
-    // 캐릭터 이미지 찌그러짐 방지: clone 내 img 크기 명시 고정
-    clone.querySelectorAll('img').forEach(img=>{
-      const orig=target.querySelector('img[src="'+img.src+'"]');
-      if(orig){
-        img.style.width=orig.offsetWidth+'px';
-        img.style.height=orig.offsetHeight+'px';
-        img.style.objectFit='contain';
+    // 하단 여백 완전 제거
+    clone.style.cssText='position:static;overflow:visible;height:auto;padding:0;margin:0;';
+    // #dash-main / #card-list 등 내부 스크롤 컨테이너 여백 제거
+    clone.querySelectorAll('#dash-main,#card-list,#history-main,#todo-main').forEach(el=>{
+      el.style.paddingBottom='0';
+      el.style.overflow='visible';
+      el.style.height='auto';
+      el.style.maxHeight='none';
+    });
+    // 캐릭터 이미지: 원본 offsetWidth/Height를 직접 읽어 명시 고정
+    const origImgs=[...target.querySelectorAll('img')];
+    const cloneImgs=[...clone.querySelectorAll('img')];
+    origImgs.forEach((orig,i)=>{
+      if(!cloneImgs[i]) return;
+      const w=orig.offsetWidth, h=orig.offsetHeight;
+      if(w>0&&h>0){
+        cloneImgs[i].style.width=w+'px';
+        cloneImgs[i].style.height=h+'px';
+        cloneImgs[i].style.minWidth=w+'px';
+        cloneImgs[i].style.minHeight=h+'px';
+        cloneImgs[i].style.objectFit='contain';
+        cloneImgs[i].style.flexShrink='0';
       }
     });
     wrapper.appendChild(clone);
@@ -1960,7 +1973,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602180000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602190000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
