@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260604000000 -->
+<!DOCTYPE html><!-- v20260604010000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -660,7 +660,7 @@ function toggleLang(){
     logo.innerHTML=lang==='ko'?'해<span>냄</span>':'DID <span>IT</span>';
     logo.style.fontSize=lang==='ko'?'15px':'13px';
     logo.style.fontWeight=lang==='ko'?'800':'900';
-    logo.style.letterSpacing=lang==='ko'?'-0.3px':'0.5px';
+    logo.style.letterSpacing=lang==='ko'?'-0.3px':'-0.5px';
   }
   const header=document.getElementById('header');
   if(header) header.style.gap=lang==='ko'?'5px':'4px';
@@ -1988,7 +1988,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260604000000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260604010000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
@@ -2048,7 +2048,7 @@ if(_tti) _tti.textContent=_tl.todo;
     logo.innerHTML='DID <span>IT</span>';
     logo.style.fontSize='13px';
     logo.style.fontWeight='900';
-    logo.style.letterSpacing='0.5px';
+    logo.style.letterSpacing='-0.5px';
   }
 })();
 render(); resetFabTimer(); applyAdVisibility();
