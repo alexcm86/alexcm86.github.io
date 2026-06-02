@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602220000 -->
+<!DOCTYPE html><!-- v20260602230000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1126,7 +1126,6 @@ function captureScreen(){
 
   // 요소의 스타일을 임시 변경 후 캡처, 완료 후 복원
   function captureElement(el, extraStyles, fileBaseName){
-    // 1) 변경할 요소들 수집 및 원본 스타일 저장
     const overrides=[];
     function applyOverride(target, styles){
       const saved={};
@@ -1134,16 +1133,20 @@ function captureScreen(){
       overrides.push({target, saved});
     }
 
-    // 스크롤 컨테이너들: overflow visible, padding-bottom 0, height auto
-    const scrollEls=el.querySelectorAll('#dash-main,#card-list,#history-main,#todo-main');
-    scrollEls.forEach(e=>applyOverride(e,{overflow:'visible',height:'auto',maxHeight:'none',paddingBottom:'0'}));
+    // ① img 크기를 스타일 변경 전에 먼저 읽음 (reflow 전 정확한 값)
+    const imgSizes=[];
+    el.querySelectorAll('img').forEach(img=>{
+      imgSizes.push({img, w:img.offsetWidth, h:img.offsetHeight});
+    });
 
-    // el 자체
+    // ② 스크롤 컨테이너 여백/overflow 제거
+    el.querySelectorAll('#dash-main,#card-list,#history-main,#todo-main').forEach(e=>
+      applyOverride(e,{overflow:'visible',height:'auto',maxHeight:'none',paddingBottom:'0'})
+    );
     applyOverride(el,{overflow:'visible',height:'auto',paddingBottom:'0',...extraStyles});
 
-    // img 찌그러짐 방지: transition 제거 + 실제 렌더 크기 명시 고정
-    el.querySelectorAll('img').forEach(img=>{
-      const w=img.offsetWidth, h=img.offsetHeight;
+    // ③ 읽어둔 원본 크기로 img 고정 (reflow 후 찌그러진 값이 아닌 원본값)
+    imgSizes.forEach(({img,w,h})=>{
       if(w>0&&h>0){
         applyOverride(img,{
           transition:'none',
@@ -1154,14 +1157,13 @@ function captureScreen(){
       }
     });
 
-    // 2) html2canvas로 직접 캡처
+    // ④ html2canvas 직접 캡처
     html2canvas(el,{
       useCORS:true, scale:2, backgroundColor:bgColor,
       scrollX:0, scrollY:0, logging:false,
       windowWidth:el.scrollWidth, windowHeight:el.scrollHeight,
       width:el.offsetWidth, height:el.scrollHeight
     }).then(srcCanvas=>{
-      // 3) 스타일 복원
       overrides.forEach(({target,saved})=>{ Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }); });
       if(btn) btn.style.opacity='1';
       const canvas=addWatermark(srcCanvas);
@@ -1958,7 +1960,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602220000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602230000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
