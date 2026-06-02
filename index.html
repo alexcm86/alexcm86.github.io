@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260603020000 -->
+<!DOCTYPE html><!-- v20260603030000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1699,8 +1699,8 @@ function renderCard(g){
           const perDay=remaining/daysLeft;
           // 소수점: 1 미만이면 0.1단위 올림, 이상이면 정수 올림
           const perDayRounded=perDay<1?Math.ceil(perDay*10)/10:Math.ceil(perDay);
-          // 천단위 콤마 포맷
-          const perDayFmt=perDayRounded>=1000?perDayRounded.toLocaleString('ko-KR'):String(perDayRounded);
+          // 천단위 콤마 포맷 (fmt 함수 재사용)
+          const perDayFmt=perDay<1?String(perDayRounded):fmt(perDayRounded);
           const unit=esc(g.unit||'회');
           const hint=lang==='ko'
             ? (isDaily?`하루 ${perDayFmt}${unit} 필요`:`월 ${perDayFmt}${unit} 필요`)
@@ -1986,7 +1986,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260603020000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260603030000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{

@@ -1,5 +1,5 @@
-// sw.js v20260603020000
-const CACHE_NAME = 'haenaem-v20260603020000';
+// sw.js v20260603030000
+const CACHE_NAME = 'haenaem-v20260603030000';
 const ASSETS = [
   '/',
   '/index.html',
