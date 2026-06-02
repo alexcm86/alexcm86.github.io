@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602270000 -->
+<!DOCTYPE html><!-- v20260602280000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1061,24 +1061,8 @@ function applyTheme(t,skipSaveRender=false){
   if(!skipSaveRender){save();render();}
 }
 
-/* ── 현재 테마 이미지 preload + base64 캐시 ── */
+/* ── 현재 테마 이미지 preload ── */
 const _preloadedThemes = new Set();
-const _imgBase64Cache = {}; // src -> base64 dataURL
-
-function imgToBase64(src){
-  return new Promise(resolve=>{
-    if(_imgBase64Cache[src]){ resolve(_imgBase64Cache[src]); return; }
-    fetch(src)
-      .then(r=>r.blob())
-      .then(blob=>{
-        const reader=new FileReader();
-        reader.onload=()=>{ _imgBase64Cache[src]=reader.result; resolve(reader.result); };
-        reader.onerror=()=>resolve(null);
-        reader.readAsDataURL(blob);
-      })
-      .catch(()=>resolve(null));
-  });
-}
 
 function preloadThemeImages(t) {
   if (_preloadedThemes.has(t)) return;
@@ -1088,8 +1072,6 @@ function preloadThemeImages(t) {
     const img = new Image();
     img.src = src;
     img.decoding = 'async';
-    // 백그라운드에서 base64도 캐싱
-    imgToBase64(src);
   });
 }
 function toggleTheme(){
@@ -1142,7 +1124,7 @@ function captureScreen(){
     return canvas;
   }
 
-  // 요소의 스타일을 임시 변경 후 캡처, 완료 후 복원
+  // 캡처 메인 함수
   function captureElement(el, extraStyles, fileBaseName){
     const overrides=[];
     function applyOverride(target, styles){
@@ -1154,17 +1136,24 @@ function captureScreen(){
       overrides.forEach(({target,saved})=>Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }));
     }
 
-    // ① 캡처 전 img 위치와 DOM 참조를 기록 (스타일 변경 전)
+    // ① 스타일 변경 전: img 위치 + 부모 컨테이너 기록
     const elRect=el.getBoundingClientRect();
-    const imgSnapshots=[];
+    const imgInfos=[];
     el.querySelectorAll('img').forEach(img=>{
       const r=img.getBoundingClientRect();
-      imgSnapshots.push({
-        domImg: img,          // DOM img 객체 직접 참조 (re-fetch 없음)
-        x: Math.round(r.left - elRect.left),
-        y: Math.round(r.top  - elRect.top),
-        w: Math.round(r.width),
-        h: Math.round(r.height)
+      // img의 부모 컨테이너(overflow:hidden 포함)를 캡처 타겟으로 사용
+      const container=img.parentElement||img;
+      const cr=container.getBoundingClientRect();
+      imgInfos.push({
+        container,
+        x: Math.round(cr.left - elRect.left),
+        y: Math.round(cr.top  - elRect.top),
+        w: Math.round(cr.width),
+        h: Math.round(cr.height),
+        imgX: Math.round(r.left - cr.left),
+        imgY: Math.round(r.top  - cr.top),
+        imgW: Math.round(r.width),
+        imgH: Math.round(r.height),
       });
     });
 
@@ -1187,46 +1176,41 @@ function captureScreen(){
       });
     }
     const captureH=Math.ceil(contentBottom)+16;
+    const sc=2;
 
-    // ④ img 제외하고 캡처
-    html2canvas(el,{
-      useCORS:true, scale:2, backgroundColor:bgColor,
+    // ④ 전체 캡처(img 제외) + 각 img 컨테이너 개별 캡처를 병렬로
+    const mainCapture=html2canvas(el,{
+      useCORS:true, scale:sc, backgroundColor:bgColor,
       scrollX:0, scrollY:0, logging:false,
       width:el.offsetWidth, height:captureH,
-      ignoreElements: e => e.tagName==='IMG'
-    }).then(srcCanvas=>{
+      ignoreElements: e=>e.tagName==='IMG'
+    });
+
+    // img 컨테이너를 각각 html2canvas로 캡처 (same-origin DOM이라 tainted 없음)
+    const containerCaptures=imgInfos.map(info=>
+      html2canvas(info.container,{
+        useCORS:true, scale:sc, backgroundColor:null,
+        scrollX:0, scrollY:0, logging:false
+      }).then(c=>({canvas:c, info})).catch(()=>null)
+    );
+
+    Promise.all([mainCapture, Promise.all(containerCaptures)])
+    .then(([mainCanvas, containerResults])=>{
       restoreAll();
       if(btn) btn.style.opacity='1';
 
-      // ⑤ base64 캐시로 img 합성 (CORS 완전 우회)
-      const ctx=srcCanvas.getContext('2d');
-      const sc=2;
-      const drawNext=(i)=>{
-        if(i>=imgSnapshots.length){
-          const final=addWatermark(srcCanvas);
-          openShareSheet(final.toDataURL('image/png'), fileBaseName, final);
-          return;
-        }
-        const {domImg,x,y,w,h}=imgSnapshots[i];
-        const cached=_imgBase64Cache[domImg.src];
-        if(cached){
-          const tmp=new Image();
-          tmp.onload=()=>{ ctx.drawImage(tmp,x*sc,y*sc,w*sc,h*sc); drawNext(i+1); };
-          tmp.src=cached;
-        } else {
-          // 캐시 없으면 fetch 후 합성
-          imgToBase64(domImg.src).then(b64=>{
-            if(b64){
-              const tmp=new Image();
-              tmp.onload=()=>{ ctx.drawImage(tmp,x*sc,y*sc,w*sc,h*sc); drawNext(i+1); };
-              tmp.src=b64;
-            } else { drawNext(i+1); }
-          });
-        }
-      };
-      drawNext(0);
+      // ⑤ 컨테이너 캡처를 메인 canvas 위에 합성
+      const ctx=mainCanvas.getContext('2d');
+      containerResults.forEach(result=>{
+        if(!result) return;
+        const {canvas:cc, info}=result;
+        ctx.drawImage(cc, info.x*sc, info.y*sc, info.w*sc, info.h*sc);
+      });
 
-    }).catch(()=>{
+      const final=addWatermark(mainCanvas);
+      openShareSheet(final.toDataURL('image/png'), fileBaseName, final);
+    })
+    .catch(()=>{
       restoreAll();
       if(btn) btn.style.opacity='1';
       alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
@@ -2018,7 +2002,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602270000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602280000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
