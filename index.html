@@ -1,6 +1,7 @@
 <!DOCTYPE html><!-- v20260602140000 -->
 <html lang="ko">
 <head>
+<meta name="description" content="해냄 - KPI 목표 관리 앱">
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -13,8 +14,10 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <title>해냄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 <style>
   :root{
     --blue:#4f46e5;--blue-bg:#eef2ff;
@@ -293,7 +296,7 @@
   .kpi-bar-wrap{height:3px;background:var(--bar-track,#f0f0f0);border-radius:99px;overflow:hidden;margin-top:2px}
   .kpi-bar-fill{height:100%;border-radius:99px}
   .done-badge{position:absolute;top:6px;right:8px;background:linear-gradient(135deg,#f5a623,#fbbf24);color:#fff;font-weight:700;border-radius:5px;padding:1px 5px;line-height:1.4;}
-  .drag-handle{flex-shrink:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px;cursor:grab;opacity:0.3}
+  .drag-handle{flex-shrink:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px;cursor:grab;opacity:0.3;touch-action:none}
   .drag-handle div{width:14px;height:2px;background:var(--sub);border-radius:2px}
 
   /* Actions */
@@ -329,7 +332,7 @@
   .empty-text{font-size:13px}
 
   /* Modal */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:100;display:flex;align-items:center;justify-content:center;padding:0 14px;animation:fadeIn .18s ease}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);z-index:100;display:flex;align-items:center;justify-content:center;padding:0 14px;animation:fadeIn .18s ease;will-change:opacity}
   .overlay.bottom{align-items:flex-end;padding:0}
   .modal-box{background:var(--card);border-radius:20px;width:100%;max-width:440px;padding:24px 20px 20px;box-shadow:0 24px 60px rgba(0,0,0,0.25);animation:slideUp .2s ease;max-height:88vh;overflow-y:auto}
   .modal-box.sheet{border-radius:18px 18px 0 0;max-width:100%;padding-bottom:calc(20px + var(--safe-bottom));animation:slideUpB .2s ease;max-height:75vh}
@@ -410,9 +413,9 @@
   .year-chip.active{background:var(--accent-bg);border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-border);color:var(--accent2)}
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideUpB{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
 </style>
 <!-- Google AdSense -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8440663734931688" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -483,7 +486,6 @@
        data-ad-slot="XXXXXXXXXX"
        data-ad-format="horizontal"
        data-full-width-responsive="false"></ins>
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
 <button id="fab" onclick="openAddModal()">+</button>
 
@@ -777,6 +779,7 @@ function dismissQuote(){
 
 let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='military';
 let cardScale=100;
+let _todayCache='';
 const SCALE_STEP=5, SCALE_MIN=40, SCALE_MAX=100;
 
 
@@ -839,8 +842,10 @@ function exportData(){
   const d=new Date();
   a.href=url;
   a.download=`kpi-backup-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),100);
 }
 function importData(e){
   const file=e.target.files[0];
@@ -871,6 +876,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function pctVal(g){const c=Number(g.current)||0,t=Number(g.target)||0;return t>0?Math.round((c/t)*100):0;}
 
 function render(){
+  _todayCache = today();
   if(view==='dash') document.getElementById('main').innerHTML=renderDash();
   else if(view==='history') document.getElementById('main').innerHTML=renderHistory();
   else if(view==='todo') document.getElementById('main').innerHTML=renderTodo();
@@ -911,7 +917,7 @@ function renderTodoItems(items, isHistory){
 }
 
 function renderTodo(){
-  const todayStr=today();
+  const todayStr=_todayCache||today();
   // kpi 옵션 (미사용 제거)
 
   // 날짜별 그룹핑 (최신순)
@@ -1038,10 +1044,12 @@ const _preloadedThemes = new Set();
 function preloadThemeImages(t) {
   if (_preloadedThemes.has(t)) return; // 이미 로드된 테마 스킵
   _preloadedThemes.add(t);
+  // theme 전역이 이미 applyTheme 내에서 설정된 뒤 호출되므로 getHaenaemImgs() 사용 가능
   const imgs = getHaenaemImgs();
   imgs.forEach(src => {
     const img = new Image();
     img.src = src;
+    img.decoding = 'async';
   });
 }
 function toggleTheme(){
@@ -1132,9 +1140,10 @@ function captureScreen(){
 }
 function switchView(v){
   view=v;
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
-    b.classList.toggle('active',(i===0&&v==='list')||(i===1&&v==='dash')||(i===2&&v==='history')||(i===3&&v==='todo'));
-  });
+  const map={list:'tab-list',dash:'tab-dash',history:'tab-hist',todo:'tab-todo'};
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  const activeBtn=document.getElementById(map[v]);
+  if(activeBtn) activeBtn.classList.add('active');
   render();
 }
 
@@ -1167,10 +1176,9 @@ function renderDash(){
   const byCat=CATS.map(c=>({cat:c,items:goals.filter(g=>g.category===c)})).filter(x=>x.items.length>0);
   const sorted=[...goals].sort((a,b)=>pctVal(b)-pctVal(a));
   const urgent=goals.filter(g=>g.deadline&&/^\d{4}-\d{2}-\d{2}$/.test(g.deadline)).map(g=>{
-    const [dy,dm,dd]=g.deadline.split('-').map(Number);
-    const deadlineMs=new Date(dy,dm-1,dd).setHours(0,0,0,0);
-    const todayMs=new Date().setHours(0,0,0,0);
-    const diff=Math.ceil((deadlineMs-todayMs)/86400000);
+    const deadlineDate=parseLocalDate(g.deadline);
+    const todayDate=parseLocalDate(_todayCache||today());
+    const diff=Math.round((deadlineDate-todayDate)/86400000);
     return {...g,diff};
   }).filter(g=>g.diff>=0&&g.diff<=30).sort((a,b)=>a.diff-b.diff);
 
@@ -1298,17 +1306,17 @@ function drawDonut(){
   byCat.forEach(({cat,items})=>{
     const slice=(items.length/total)*2*Math.PI;
     ctx.beginPath();
-    ctx.moveTo(cx,cy);
     ctx.arc(cx,cy,outerR,startAngle,startAngle+slice);
+    ctx.arc(cx,cy,innerR,startAngle+slice,startAngle,true);
     ctx.closePath();
     ctx.fillStyle=getCAT_COLOR()[cat];
     ctx.fill();
     startAngle+=slice;
   });
-  // inner hole
-  ctx.beginPath();
-  ctx.arc(cx,cy,innerR,0,2*Math.PI);
+  // gap between slices for cleaner look
   const holeColor={dark:'#161b22',peach:'#fff8f6',forest:'#ffffff',ocean:'#ffffff',midnight:'#1a1530',sunshine:'#ffffff',military:'#252b1f'};
+  ctx.beginPath();
+  ctx.arc(cx,cy,innerR-1,0,2*Math.PI);
   ctx.fillStyle=holeColor[theme]||'#ffffff';
   ctx.fill();
 }
@@ -1505,15 +1513,14 @@ function renderCard(g){
   const color=getCAT_COLOR()[g.category], bg=getCAT_BG()[g.category];
   const done=p>=100;
   let dday='';
-  const todayStr=today();
+  const todayStr=_todayCache;
   // 시작일이 미래면 "N일 후 시작" 표시
   if(g.startAt && g.startAt > todayStr){
     const startDiff=Math.ceil((parseLocalDate(g.startAt)-new Date())/86400000);
     dday=`<span style="font-size:var(--fsXS,9px);color:var(--accent2)">D-${startDiff} 시작</span>`;
   } else if(g.deadline){
-    const diff=Math.ceil((parseLocalDate(g.deadline)-new Date())/86400000);
-    const muted2=getComputedStyle(document.body).getPropertyValue('--muted2').trim()||'#94a3b8';
-    const col=diff<7?'#dc2626':muted2;
+    const diff=Math.ceil((parseLocalDate(g.deadline)-parseLocalDate(todayStr))/86400000);
+    const col=diff<7?'#dc2626':'var(--muted2)';
     dday=`<span style="font-size:var(--fsXS,9px);color:${col}">${diff>0?'D-'+diff:diff===0?(lang==='ko'?'오늘':'Today'):'D+'+Math.abs(diff)}</span>`;
   }
   // SVG ring: viewBox 고정(0 0 44 44), CSS로 크기 제어 → 깨짐 없음
@@ -1707,7 +1714,7 @@ function saveLog(id){
   if(i===-1) return;
   const logDate=document.getElementById('l-date')?.value||today();
   goals[i].logs.push({date:logDate,value:val,note});
-  goals[i].current=goals[i].logs.reduce(function(s,l){return s+l.value;},0);
+  goals[i].current=goals[i].logs.reduce((s,l)=>s+l.value,0);
   save();closeModal();render();
 }
 function editLog(gid,idx){
@@ -1728,7 +1735,7 @@ function editLog(gid,idx){
     const n=document.getElementById('eln').value.trim();
     if(isNaN(v)||v<=0){alert(lang==='ko'?'올바른 값을 입력하세요':'Please enter a valid value');return;}
     g.logs[idx]={date:g.logs[idx].date,value:v,note:n};
-    g.current=g.logs.reduce(function(s,l){return s+l.value;},0);
+    g.current=g.logs.reduce((s,l)=>s+l.value,0);
     save();render();closeModal();
     setTimeout(function(){openHist(gid);},150);
   };
@@ -1741,7 +1748,7 @@ function delLog(gid,idx){
     const g=goals.find(x=>x.id===gid);
     if(!g) return;
     g.logs.splice(idx,1);
-    g.current=g.logs.reduce(function(s,l){return s+l.value;},0);
+    g.current=g.logs.reduce((s,l)=>s+l.value,0);
     save();render();closeModal();
     setTimeout(function(){openHist(gid);},150);
   });
@@ -1788,7 +1795,7 @@ function openHist(id){
     modalEl.querySelectorAll('.hdel-btn').forEach(function(btn){
       btn.onclick=function(){delLog(btn.dataset.gid,parseInt(btn.dataset.idx));};
     });
-  },50);
+  },0);
 }
 function confirmModal(msg, onConfirm){
   closeModal();
@@ -1840,6 +1847,15 @@ if('serviceWorker' in navigator){
 
 load();
 const _tl=T[lang];
+// AdSense 비동기 로드 (렌더 블로킹 방지)
+(function(){
+  var s=document.createElement('script');
+  s.async=true;
+  s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8440663734931688';
+  s.crossOrigin='anonymous';
+  s.onload=function(){(window.adsbygoogle=window.adsbygoogle||[]).push({});};
+  document.head.appendChild(s);
+})();
 const _tli=document.getElementById('tab-list');
 const _tdi=document.getElementById('tab-dash');
 const _thi=document.getElementById('tab-hist');
