@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260603050000 -->
+<!DOCTYPE html><!-- v20260604000000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1988,7 +1988,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260603050000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260604000000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
@@ -2040,6 +2040,17 @@ if(_tli) _tli.textContent=_tl.list;
 if(_tdi) _tdi.textContent=_tl.dash;
 if(_thi) _thi.textContent=_tl.hist;
 if(_tti) _tti.textContent=_tl.todo;
+// 초기 로드 시 언어에 따라 로고 스타일 적용
+(function(){
+  const logo=document.querySelector('.logo');
+  if(!logo) return;
+  if(lang==='en'){
+    logo.innerHTML='DID <span>IT</span>';
+    logo.style.fontSize='13px';
+    logo.style.fontWeight='900';
+    logo.style.letterSpacing='0.5px';
+  }
+})();
 render(); resetFabTimer(); applyAdVisibility();
 </script>
 </body>
