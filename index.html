@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602260000 -->
+<!DOCTYPE html><!-- v20260602270000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1061,17 +1061,35 @@ function applyTheme(t,skipSaveRender=false){
   if(!skipSaveRender){save();render();}
 }
 
-/* ── 현재 테마 이미지 preload ── */
+/* ── 현재 테마 이미지 preload + base64 캐시 ── */
 const _preloadedThemes = new Set();
+const _imgBase64Cache = {}; // src -> base64 dataURL
+
+function imgToBase64(src){
+  return new Promise(resolve=>{
+    if(_imgBase64Cache[src]){ resolve(_imgBase64Cache[src]); return; }
+    fetch(src)
+      .then(r=>r.blob())
+      .then(blob=>{
+        const reader=new FileReader();
+        reader.onload=()=>{ _imgBase64Cache[src]=reader.result; resolve(reader.result); };
+        reader.onerror=()=>resolve(null);
+        reader.readAsDataURL(blob);
+      })
+      .catch(()=>resolve(null));
+  });
+}
+
 function preloadThemeImages(t) {
-  if (_preloadedThemes.has(t)) return; // 이미 로드된 테마 스킵
+  if (_preloadedThemes.has(t)) return;
   _preloadedThemes.add(t);
-  // theme 전역이 이미 applyTheme 내에서 설정된 뒤 호출되므로 getHaenaemImgs() 사용 가능
   const imgs = getHaenaemImgs();
   imgs.forEach(src => {
     const img = new Image();
     img.src = src;
     img.decoding = 'async';
+    // 백그라운드에서 base64도 캐싱
+    imgToBase64(src);
   });
 }
 function toggleTheme(){
@@ -1180,17 +1198,33 @@ function captureScreen(){
       restoreAll();
       if(btn) btn.style.opacity='1';
 
-      // ⑤ 이미 로드된 DOM img를 그대로 canvas에 합성 (CORS 문제 없음)
+      // ⑤ base64 캐시로 img 합성 (CORS 완전 우회)
       const ctx=srcCanvas.getContext('2d');
       const sc=2;
-      imgSnapshots.forEach(({domImg,x,y,w,h})=>{
-        if(w>0&&h>0){
-          try{ ctx.drawImage(domImg, x*sc, y*sc, w*sc, h*sc); }catch(e){}
+      const drawNext=(i)=>{
+        if(i>=imgSnapshots.length){
+          const final=addWatermark(srcCanvas);
+          openShareSheet(final.toDataURL('image/png'), fileBaseName, final);
+          return;
         }
-      });
-
-      const final=addWatermark(srcCanvas);
-      openShareSheet(final.toDataURL('image/png'), fileBaseName, final);
+        const {domImg,x,y,w,h}=imgSnapshots[i];
+        const cached=_imgBase64Cache[domImg.src];
+        if(cached){
+          const tmp=new Image();
+          tmp.onload=()=>{ ctx.drawImage(tmp,x*sc,y*sc,w*sc,h*sc); drawNext(i+1); };
+          tmp.src=cached;
+        } else {
+          // 캐시 없으면 fetch 후 합성
+          imgToBase64(domImg.src).then(b64=>{
+            if(b64){
+              const tmp=new Image();
+              tmp.onload=()=>{ ctx.drawImage(tmp,x*sc,y*sc,w*sc,h*sc); drawNext(i+1); };
+              tmp.src=b64;
+            } else { drawNext(i+1); }
+          });
+        }
+      };
+      drawNext(0);
 
     }).catch(()=>{
       restoreAll();
@@ -1984,7 +2018,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602260000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602270000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
