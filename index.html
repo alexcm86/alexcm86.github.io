@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260603030000 -->
+<!DOCTYPE html><!-- v20260603050000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -628,7 +628,7 @@ const T={
     todo:'할일', todoAdd:'+ 할일 추가', todoEmpty:'오늘 할일을 추가해보세요', todoDone:'완료', todoUndone:'미완료', todoDeleteConfirm:'삭제할까요?',
   },
   en:{
-    list:'List', dash:'Dashboard', hist:'History',
+    list:'List', dash:'Board', hist:'Log',
     add:'+ Add', addTitle:'New KPI', editTitle:'Edit KPI',
     nameLbl:'Goal Name *', namePh:'e.g. Monthly revenue ₩20M',
     catLbl:'Category', unitLbl:'Unit', unitPh:'km, times, $...',
@@ -658,7 +658,9 @@ function toggleLang(){
   const logo=document.querySelector('.logo');
   if(logo){
     logo.innerHTML=lang==='ko'?'해<span>냄</span>':'DID <span>IT</span>';
-    logo.style.fontSize=lang==='ko'?'15px':'11px';
+    logo.style.fontSize=lang==='ko'?'15px':'13px';
+    logo.style.fontWeight=lang==='ko'?'800':'900';
+    logo.style.letterSpacing=lang==='ko'?'-0.3px':'0.5px';
   }
   const header=document.getElementById('header');
   if(header) header.style.gap=lang==='ko'?'5px':'4px';
@@ -1986,7 +1988,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260603030000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260603050000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
