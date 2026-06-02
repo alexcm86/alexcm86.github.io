@@ -823,6 +823,11 @@ function load(){
     if(!raw) throw new Error('empty');
     const d=JSON.parse(raw);
     goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'military'; applyTheme(theme,true);
+    // 오늘 이전 날짜 할일 자동 삭제
+    const todayStr=today();
+    const before=todos.length;
+    todos=todos.filter(td=>td.date>=todayStr);
+    if(todos.length!==before) save();
   }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='military';applyTheme('military',true);}
 }
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
@@ -1095,6 +1100,36 @@ function captureScreen(){
       document.body.removeChild(wrapper);
       if(restoreScroll) restoreScroll();
       if(btn) btn.style.opacity='1';
+      // 워터마크 합성
+      const ctx=canvas.getContext('2d');
+      const dpr=2; // scale:2 기준
+      const pad=10*dpr, fSize=11*dpr;
+      const dateStr=today();
+      const label=`해냄  ·  ${dateStr}`;
+      ctx.save();
+      ctx.font=`600 ${fSize}px "Noto Sans KR", sans-serif`;
+      const tw=ctx.measureText(label).width;
+      const bx=canvas.width-tw-pad*2-8*dpr;
+      const by=canvas.height-pad-fSize-4*dpr;
+      // 반투명 배경 pill
+      ctx.fillStyle='rgba(0,0,0,0.22)';
+      const rr=fSize*0.6;
+      const bw=tw+pad*2, bh=fSize+pad;
+      ctx.beginPath();
+      ctx.moveTo(bx+rr,by); ctx.lineTo(bx+bw-rr,by);
+      ctx.arcTo(bx+bw,by,bx+bw,by+bh,rr);
+      ctx.lineTo(bx+bw,by+bh-rr);
+      ctx.arcTo(bx+bw,by+bh,bx,by+bh,rr);
+      ctx.lineTo(bx+rr,by+bh);
+      ctx.arcTo(bx,by+bh,bx,by,rr);
+      ctx.lineTo(bx,by+rr);
+      ctx.arcTo(bx,by,bx+bw,by,rr);
+      ctx.closePath();
+      ctx.fill();
+      // 텍스트
+      ctx.fillStyle='rgba(255,255,255,0.9)';
+      ctx.fillText(label, bx+pad, by+fSize);
+      ctx.restore();
       const dataUrl=canvas.toDataURL('image/png');
       openShareSheet(dataUrl, fileBaseName, canvas);
     }).catch(()=>{
@@ -1695,7 +1730,7 @@ function openAddModal(){
       <div><label>${t("deadlineLbl")}</label><input id="f-deadline" type="date"></div>
     </div>
     <div class="row2">
-      <div><label>${t("targetLbl")}</label><input id="f-target" type="number" placeholder="100" oninput="chkSave()"></div>
+      <div><label>${t("targetLbl")}</label><input id="f-target" type="number" step="any" inputmode="decimal" placeholder="100" oninput="chkSave()"></div>
       <div></div>
     </div>
     <label>${t("noteLbl")}</label><textarea id="f-note" placeholder="${t('notePh')}"></textarea>
@@ -1734,7 +1769,7 @@ function openEdit(id){
       <div><label>${t('unitLbl')}</label><input id="f-unit" value="${esc(g.unit||"")}"></div>
     </div>
     <div class="row2">
-      <div><label>${t('targetLbl')}</label><input id="f-target" type="number" value="${g.target}"></div>
+      <div><label>${t('targetLbl')}</label><input id="f-target" type="number" step="any" inputmode="decimal" value="${g.target}"></div>
       <div><label>${t('deadlineLbl')}</label><input id="f-deadline" type="date" value="${g.deadline||''}"></div>
     </div>
     <div class="row2">
@@ -1775,7 +1810,7 @@ function openLog(id){
     <label>${t('logDate')}</label>
     <input id="l-date" type="date" value="${today()}" style="margin-bottom:4px">
     <label>${t("logLbl")}</label>
-    <input id="l-val" type="number" placeholder="${t('logPh')}" oninput="chkLog()">
+    <input id="l-val" type="number" step="any" inputmode="decimal" placeholder="${t('logPh')}" oninput="chkLog()">
     <label>${t("noteLbl")}</label>
     <input id="l-note" placeholder="${t('logNote')}">
     <div class="modal-actions">
@@ -1805,7 +1840,7 @@ function editLog(gid,idx){
   showModal(`<div class="modal-title">${lang==='ko'?'기록 수정':'Edit Record'}</div>
     <div style="font-size:12px;color:var(--sub);margin-bottom:14px">${esc(g.title)} · ${l.date}</div>
     <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">${lang==='ko'?'값':'Value'} (${esc(g.unit)})</label>
-    <input id="elv" type="number" value="${l.value}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;margin-bottom:10px;box-sizing:border-box;background:var(--input-bg);color:var(--text)">
+    <input id="elv" type="number" step="any" inputmode="decimal" value="${l.value}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;margin-bottom:10px;box-sizing:border-box;background:var(--input-bg);color:var(--text)">
     <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">${lang==='ko'?'메모':'Note'}</label>
     <input id="eln" type="text" value="${esc(l.note||'')}" placeholder="${lang==='ko'?'메모 (선택)':'Note (optional)'}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;margin-bottom:16px;box-sizing:border-box;background:var(--input-bg);color:var(--text)">
     <button class="btn-full" id="elSave">${lang==='ko'?'저장':'Save'}</button>
