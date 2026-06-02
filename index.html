@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602160000 -->
+<!DOCTYPE html><!-- v20260602170000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1102,33 +1102,36 @@ function captureScreen(){
       if(btn) btn.style.opacity='1';
       // 워터마크 합성
       const ctx=canvas.getContext('2d');
-      const dpr=2; // scale:2 기준
-      const pad=10*dpr, fSize=11*dpr;
+      const sc=2; // html2canvas scale:2
+      const fSize=12*sc;
       const dateStr=today();
-      const label=`해냄  ·  ${dateStr}`;
+      const label=`해냄 · ${dateStr}`;
       ctx.save();
-      ctx.font=`600 ${fSize}px "Noto Sans KR", sans-serif`;
+      ctx.font=`600 ${fSize}px sans-serif`;
       const tw=ctx.measureText(label).width;
-      const bx=canvas.width-tw-pad*2-8*dpr;
-      const by=canvas.height-pad-fSize-4*dpr;
-      // 반투명 배경 pill
-      ctx.fillStyle='rgba(0,0,0,0.22)';
-      const rr=fSize*0.6;
-      const bw=tw+pad*2, bh=fSize+pad;
+      const ph=4*sc, pv=3*sc; // 좌우/상하 패딩
+      const bw=tw+ph*2, bh=fSize+pv*2;
+      const margin=10*sc;
+      const bx=canvas.width-bw-margin;
+      const by=canvas.height-bh-margin;
+      const rr=6*sc;
+      // 둥근 배경
+      ctx.fillStyle='rgba(0,0,0,0.30)';
       ctx.beginPath();
-      ctx.moveTo(bx+rr,by); ctx.lineTo(bx+bw-rr,by);
-      ctx.arcTo(bx+bw,by,bx+bw,by+bh,rr);
-      ctx.lineTo(bx+bw,by+bh-rr);
-      ctx.arcTo(bx+bw,by+bh,bx,by+bh,rr);
-      ctx.lineTo(bx+rr,by+bh);
-      ctx.arcTo(bx,by+bh,bx,by,rr);
-      ctx.lineTo(bx,by+rr);
-      ctx.arcTo(bx,by,bx+bw,by,rr);
+      ctx.moveTo(bx+rr, by);
+      ctx.lineTo(bx+bw-rr, by);
+      ctx.quadraticCurveTo(bx+bw, by, bx+bw, by+rr);
+      ctx.lineTo(bx+bw, by+bh-rr);
+      ctx.quadraticCurveTo(bx+bw, by+bh, bx+bw-rr, by+bh);
+      ctx.lineTo(bx+rr, by+bh);
+      ctx.quadraticCurveTo(bx, by+bh, bx, by+bh-rr);
+      ctx.lineTo(bx, by+rr);
+      ctx.quadraticCurveTo(bx, by, bx+rr, by);
       ctx.closePath();
       ctx.fill();
       // 텍스트
-      ctx.fillStyle='rgba(255,255,255,0.9)';
-      ctx.fillText(label, bx+pad, by+fSize);
+      ctx.fillStyle='rgba(255,255,255,0.92)';
+      ctx.fillText(label, bx+ph, by+pv+fSize*0.82);
       ctx.restore();
       const dataUrl=canvas.toDataURL('image/png');
       openShareSheet(dataUrl, fileBaseName, canvas);
@@ -1942,7 +1945,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602160000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602170000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
