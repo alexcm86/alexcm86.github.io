@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602210000 -->
+<!DOCTYPE html><!-- v20260602220000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1139,14 +1139,25 @@ function captureScreen(){
     scrollEls.forEach(e=>applyOverride(e,{overflow:'visible',height:'auto',maxHeight:'none',paddingBottom:'0'}));
 
     // el 자체
-    const elSaved={overflow:el.style.overflow,height:el.style.height,paddingBottom:el.style.paddingBottom};
     applyOverride(el,{overflow:'visible',height:'auto',paddingBottom:'0',...extraStyles});
+
+    // img 찌그러짐 방지: transition 제거 + 실제 렌더 크기 명시 고정
+    el.querySelectorAll('img').forEach(img=>{
+      const w=img.offsetWidth, h=img.offsetHeight;
+      if(w>0&&h>0){
+        applyOverride(img,{
+          transition:'none',
+          width:w+'px', height:h+'px',
+          minWidth:w+'px', minHeight:h+'px',
+          objectFit:'contain', flexShrink:'0'
+        });
+      }
+    });
 
     // 2) html2canvas로 직접 캡처
     html2canvas(el,{
       useCORS:true, scale:2, backgroundColor:bgColor,
       scrollX:0, scrollY:0, logging:false,
-      // 실제 렌더 크기를 스크롤 높이로 지정
       windowWidth:el.scrollWidth, windowHeight:el.scrollHeight,
       width:el.offsetWidth, height:el.scrollHeight
     }).then(srcCanvas=>{
@@ -1342,7 +1353,7 @@ function renderDash(){
       <div style="font-size:11px;font-weight:600;color:${avg>=100?'#f5a623':avg>=60?'#059669':'var(--accent)'};margin-top:2px">${haenaemMsg}</div>
     </div>
     <div style="width:110px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:8px 6px">
-      <img src="${haenaemSrc}" alt="해냄이" style="width:96px;height:96px;object-fit:contain;${isComplete?'filter:drop-shadow(0 0 12px rgba(245,166,35,0.7))':'filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15))'};transition:all 0.5s ease">
+      <img src="${haenaemSrc}" alt="해냄이" style="width:96px;height:96px;object-fit:contain;flex-shrink:0;${isComplete?'filter:drop-shadow(0 0 12px rgba(245,166,35,0.7))':'filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15))'}">
     </div>
   </div>`;
 
@@ -1947,7 +1958,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602210000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602220000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
