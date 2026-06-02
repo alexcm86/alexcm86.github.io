@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602290000 -->
+<!DOCTYPE html><!-- v20260602300000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -882,6 +882,9 @@ function importData(e){
       if(d.scale!=null) cardScale=d.scale;
       if(d.lang) lang=d.lang;
       if(d.theme) applyTheme(d.theme,true); else applyTheme('military',true);
+      // 복원 시에도 오늘 이전 todos 삭제
+      const todayStr=today();
+      todos=todos.filter(td=>td.date>=todayStr);
       save();render();
       alert(lang==='ko'?`✅ ${goals.length}개 KPI 복원 완료!`:`✅ ${goals.length} KPIs restored!`);
     }catch{
@@ -1125,7 +1128,7 @@ function captureScreen(){
   }
 
   // 캡처 메인 함수
-  function captureElement(el, extraStyles, fileBaseName){
+  function captureElement(el, extraStyles, fileBaseName, onDone){
     const overrides=[];
     function applyOverride(target, styles){
       const saved={};
@@ -1134,6 +1137,7 @@ function captureScreen(){
     }
     function restoreAll(){
       overrides.forEach(({target,saved})=>Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }));
+      if(onDone) onDone();
     }
 
     // 스크롤 컨테이너 여백 제거
@@ -1142,19 +1146,20 @@ function captureScreen(){
     );
     applyOverride(el,{overflow:'visible',height:'auto',paddingBottom:'0',...extraStyles});
 
-    // 콘텐츠 실제 높이 계산
+    // 콘텐츠 실제 높이 계산 - 모든 자식 요소 대상
+    const elRectForH=el.getBoundingClientRect();
     let contentBottom=0;
+    // 내부 스크롤 컨테이너 자식 먼저
     el.querySelectorAll('#dash-main>*,#card-list>*,#history-main>*,#todo-main>*').forEach(child=>{
-      const b=child.getBoundingClientRect().bottom - el.getBoundingClientRect().top;
+      const b=child.getBoundingClientRect().bottom - elRectForH.top;
       if(b>contentBottom) contentBottom=b;
     });
-    if(contentBottom===0){
-      [...el.children].forEach(child=>{
-        const b=child.getBoundingClientRect().bottom - el.getBoundingClientRect().top;
-        if(b>contentBottom) contentBottom=b;
-      });
-    }
-    const captureH=Math.ceil(contentBottom)+16;
+    // fallback: el의 직접 자식 (year-tab-bar, history-main 등)
+    [...el.children].forEach(child=>{
+      const b=child.getBoundingClientRect().bottom - elRectForH.top;
+      if(b>contentBottom) contentBottom=b;
+    });
+    const captureH=Math.max(Math.ceil(contentBottom)+16, el.offsetHeight);
 
     html2canvas(el,{
       useCORS:true, allowTaint:true, scale:2, backgroundColor:bgColor,
@@ -1176,7 +1181,7 @@ function captureScreen(){
   if(view==='history'){
     const captureArea=document.getElementById('hist-capture-area');
     if(!captureArea){ if(btn) btn.style.opacity='1'; return; }
-    captureElement(captureArea, {marginBottom:'0'}, `해냄_이력_${today()}`);
+    captureElement(captureArea, {marginBottom:'0'}, `해냄_이력_${today()}`, null);
     return;
   }
 
@@ -1185,9 +1190,7 @@ function captureScreen(){
   if(!main){ if(btn) btn.style.opacity='1'; return; }
   const savedScroll=main.scrollTop;
   main.scrollTop=0;
-  captureElement(main, {}, `해냄_${viewNames[view]||view}_${today()}`);
-  // 스크롤 복원은 캡처 완료 후 (captureElement 내부에서 overrides 복원 시점에 맞게)
-  setTimeout(()=>{ main.scrollTop=savedScroll; }, 100);
+  captureElement(main, {}, `해냄_${viewNames[view]||view}_${today()}`, ()=>{ main.scrollTop=savedScroll; });
 }
 
 function openShareSheet(dataUrl, fileName, canvas){
@@ -1644,9 +1647,9 @@ function renderCard(g){
   const color=getCAT_COLOR()[g.category], bg=getCAT_BG()[g.category];
   const done=p>=100;
   let dday='';
-  const todayStr=_todayCache;
+  const todayStr=_todayCache||today();
   // 시작일이 미래면 "N일 후 시작" 표시
-  if(g.startAt && g.startAt > todayStr){
+  if(g.startAt && todayStr && g.startAt > todayStr){
     const startDiff=Math.ceil((parseLocalDate(g.startAt)-new Date())/86400000);
     dday=`<span style="font-size:var(--fsXS,9px);color:var(--accent2)">D-${startDiff} 시작</span>`;
   } else if(g.deadline){
@@ -1957,7 +1960,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602290000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602300000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
