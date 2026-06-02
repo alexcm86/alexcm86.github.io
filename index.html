@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602250000 -->
+<!DOCTYPE html><!-- v20260602260000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1136,41 +1136,41 @@ function captureScreen(){
       overrides.forEach(({target,saved})=>Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }));
     }
 
-    // ① 스크롤 컨테이너만 overflow/height 해제 (overflow:hidden 카드는 건드리지 않음)
+    // ① 캡처 전 img 위치와 DOM 참조를 기록 (스타일 변경 전)
+    const elRect=el.getBoundingClientRect();
+    const imgSnapshots=[];
+    el.querySelectorAll('img').forEach(img=>{
+      const r=img.getBoundingClientRect();
+      imgSnapshots.push({
+        domImg: img,          // DOM img 객체 직접 참조 (re-fetch 없음)
+        x: Math.round(r.left - elRect.left),
+        y: Math.round(r.top  - elRect.top),
+        w: Math.round(r.width),
+        h: Math.round(r.height)
+      });
+    });
+
+    // ② 스크롤 컨테이너 여백 제거
     el.querySelectorAll('#dash-main,#card-list,#history-main,#todo-main').forEach(e=>
       applyOverride(e,{overflow:'visible',height:'auto',maxHeight:'none',paddingBottom:'0'})
     );
     applyOverride(el,{overflow:'visible',height:'auto',paddingBottom:'0',...extraStyles});
 
-    // ② 실제 콘텐츠 높이: 마지막 자식 요소의 하단 좌표로 계산 (scrollHeight 오차 방지)
-    const elRect=el.getBoundingClientRect();
+    // ③ 콘텐츠 실제 높이 계산
     let contentBottom=0;
     el.querySelectorAll('#dash-main>*,#card-list>*,#history-main>*,#todo-main>*').forEach(child=>{
-      const b=child.getBoundingClientRect().bottom - elRect.top;
+      const b=child.getBoundingClientRect().bottom - el.getBoundingClientRect().top;
       if(b>contentBottom) contentBottom=b;
     });
-    // fallback: 직접 자식
     if(contentBottom===0){
       [...el.children].forEach(child=>{
-        const b=child.getBoundingClientRect().bottom - elRect.top;
+        const b=child.getBoundingClientRect().bottom - el.getBoundingClientRect().top;
         if(b>contentBottom) contentBottom=b;
       });
     }
     const captureH=Math.ceil(contentBottom)+16;
 
-    // ③ html2canvas - ignoreElements로 img 제외, 나중에 직접 합성
-    const imgPositions=[];
-    el.querySelectorAll('img').forEach(img=>{
-      const r=img.getBoundingClientRect();
-      imgPositions.push({
-        src:img.src,
-        x:Math.round(r.left - elRect.left),
-        y:Math.round(r.top  - elRect.top),
-        w:Math.round(r.width),
-        h:Math.round(r.height)
-      });
-    });
-
+    // ④ img 제외하고 캡처
     html2canvas(el,{
       useCORS:true, scale:2, backgroundColor:bgColor,
       scrollX:0, scrollY:0, logging:false,
@@ -1180,26 +1180,17 @@ function captureScreen(){
       restoreAll();
       if(btn) btn.style.opacity='1';
 
-      // ④ img를 srcCanvas에 직접 합성
+      // ⑤ 이미 로드된 DOM img를 그대로 canvas에 합성 (CORS 문제 없음)
       const ctx=srcCanvas.getContext('2d');
       const sc=2;
-      const drawNext=(i)=>{
-        if(i>=imgPositions.length){
-          const final=addWatermark(srcCanvas);
-          openShareSheet(final.toDataURL('image/png'), fileBaseName, final);
-          return;
+      imgSnapshots.forEach(({domImg,x,y,w,h})=>{
+        if(w>0&&h>0){
+          try{ ctx.drawImage(domImg, x*sc, y*sc, w*sc, h*sc); }catch(e){}
         }
-        const {src,x,y,w,h}=imgPositions[i];
-        const tmp=new Image();
-        tmp.crossOrigin='anonymous';
-        tmp.onload=()=>{
-          ctx.drawImage(tmp, x*sc, y*sc, w*sc, h*sc);
-          drawNext(i+1);
-        };
-        tmp.onerror=()=>drawNext(i+1);
-        tmp.src=src;
-      };
-      drawNext(0);
+      });
+
+      const final=addWatermark(srcCanvas);
+      openShareSheet(final.toDataURL('image/png'), fileBaseName, final);
 
     }).catch(()=>{
       restoreAll();
@@ -1993,7 +1984,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602250000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602260000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
