@@ -1,4 +1,4 @@
-const CACHE_NAME = 'haenaem-v20260602130000';
+const CACHE_NAME = 'haenaem-v20260602140000';
 const ASSETS = [
   '/',
   '/index.html',
