@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602120000 -->
+<!DOCTYPE html><!-- v20260602130000 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -1020,7 +1020,20 @@ function applyTheme(t,skipSaveRender=false){
   const btn=document.getElementById('theme-btn');
   const ico={peach:'🌸',dark:'🌙',forest:'🌿',ocean:'🌊',midnight:'🔮',sunshine:'☀️',military:'🪖'};
   if(btn) btn.textContent=ico[t]||'🎨';
+  preloadThemeImages(t);
   if(!skipSaveRender){save();render();}
+}
+
+/* ── 현재 테마 이미지 preload ── */
+const _preloadedThemes = new Set();
+function preloadThemeImages(t) {
+  if (_preloadedThemes.has(t)) return; // 이미 로드된 테마 스킵
+  _preloadedThemes.add(t);
+  const imgs = getHaenaemImgs();
+  imgs.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
 }
 function toggleTheme(){
   const order=['default','peach','sunshine','forest','ocean','military','dark','midnight'];
@@ -1797,7 +1810,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602120000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602130000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
