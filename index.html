@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602320000 -->
+<!DOCTYPE html><!-- v20260603020000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1685,22 +1685,26 @@ function renderCard(g){
           const remaining=Number(g.target)-Number(g.current);
           if(remaining<=0) return '';
           const now=parseLocalDate(todayStr);
-          let daysLeft=0, label='';
+          let daysLeft=0, isDaily=false;
           if(g.deadline){
             const dl=parseLocalDate(g.deadline);
             daysLeft=Math.ceil((dl-now)/86400000);
-            label='일';
+            isDaily=true;
           } else {
             const eom=new Date(now.getFullYear(),now.getMonth()+1,0);
             daysLeft=Math.ceil((eom-now)/86400000)+1;
-            label='월';
+            isDaily=false;
           }
           if(daysLeft<=0) return '';
           const perDay=remaining/daysLeft;
+          // 소수점: 1 미만이면 0.1단위 올림, 이상이면 정수 올림
           const perDayRounded=perDay<1?Math.ceil(perDay*10)/10:Math.ceil(perDay);
-          const hint=label==='일'
-            ? `하루 ${perDayRounded}${esc(g.unit||'회')} 필요`
-            : `월 ${perDayRounded}${esc(g.unit||'회')} 필요`;
+          // 천단위 콤마 포맷
+          const perDayFmt=perDayRounded>=1000?perDayRounded.toLocaleString('ko-KR'):String(perDayRounded);
+          const unit=esc(g.unit||'회');
+          const hint=lang==='ko'
+            ? (isDaily?`하루 ${perDayFmt}${unit} 필요`:`월 ${perDayFmt}${unit} 필요`)
+            : (isDaily?`${perDayFmt}${unit}/day needed`:`${perDayFmt}${unit} needed this month`);
           return ` <span style="color:${color};font-weight:700;font-size:var(--fsXS,9px);opacity:0.85">(${hint})</span>`;
         })()}</div>
         <div class="kpi-bar-wrap"><div class="kpi-bar-fill" style="width:${dispPct}%;background:${color}"></div></div>
@@ -1982,7 +1986,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602320000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260603020000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
