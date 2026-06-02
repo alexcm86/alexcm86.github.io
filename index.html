@@ -414,6 +414,23 @@
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
   @keyframes slideUpB{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+
+  /* 공유 바텀시트 */
+  #share-sheet-ov{position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease;}
+  #share-sheet{background:var(--card);border-radius:22px 22px 0 0;width:100%;max-width:480px;padding:12px 20px calc(24px + var(--safe-bottom));animation:slideUpB .22s ease;}
+  .share-handle{width:36px;height:4px;background:var(--mute);border-radius:99px;margin:0 auto 18px;}
+  .share-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px;text-align:center;}
+  .share-preview{width:100%;border-radius:14px;margin-bottom:18px;max-height:180px;object-fit:cover;box-shadow:0 4px 16px rgba(0,0,0,0.12);}
+  .share-btns{display:flex;flex-direction:column;gap:10px;}
+  .share-btn{width:100%;padding:14px 16px;border-radius:16px;border:none;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;gap:12px;transition:opacity .15s;}
+  .share-btn:active{opacity:0.75;}
+  .share-btn-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .share-btn-text{display:flex;flex-direction:column;align-items:flex-start;}
+  .share-btn-label{font-size:14px;font-weight:700;}
+  .share-btn-sub{font-size:11px;font-weight:500;opacity:0.7;margin-top:1px;}
+  .share-btn.download{background:var(--accent-bg);color:var(--accent);}
+  .share-btn.sns{background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7);color:#fff;}
+  .share-cancel{width:100%;padding:12px;border-radius:14px;border:1.5px solid var(--border);background:transparent;color:var(--sub);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:4px;}
 </style>
 <!-- Google AdSense -->
 </head>
@@ -1060,83 +1077,147 @@ function toggleTheme(){
 }
 
 function captureScreen(){
+  // Bug②: html2canvas 로드 완료 확인
+  if(typeof html2canvas === 'undefined'){
+    alert(lang==='ko'?'캡처 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.':'Capture library is loading. Please try again shortly.');
+    return;
+  }
   const viewNames={list:'목록',dash:'대시보드',history:'이력',todo:'할일'};
   const btn=document.getElementById('btn-capture');
   if(btn) btn.style.opacity='0';
   const captureBg={dark:'#0d1117',midnight:'#0f0b1e',peach:'#fff0f0',forest:'#f0f7f0',ocean:'#e8f4f8',sunshine:'#fffde7',military:'#1e2118'};
   const bgColor=captureBg[theme]||'#f4f6fb';
 
-  // 이력 탭이면 통계+달성률현황 영역만 캡처
-  let target;
+  function doCapture(getWrapperFn, fileBaseName){
+    const {wrapper, restoreScroll} = getWrapperFn();
+    html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:bgColor,scrollX:0,scrollY:0})
+    .then(canvas=>{
+      document.body.removeChild(wrapper);
+      if(restoreScroll) restoreScroll();
+      if(btn) btn.style.opacity='1';
+      const dataUrl=canvas.toDataURL('image/png');
+      openShareSheet(dataUrl, fileBaseName, canvas);
+    }).catch(()=>{
+      if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
+      if(restoreScroll) restoreScroll();
+      if(btn) btn.style.opacity='1';
+      alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
+    });
+  }
+
+  // 이력 탭
   if(view==='history'){
-    // year-tab-bar + history-main 안의 year-stats + hist-capture-area 를 감싸는 wrapper 생성
     const yearTab=document.getElementById('year-tab-bar');
     const histMain=document.getElementById('history-main');
     const captureArea=document.getElementById('hist-capture-area');
     if(!histMain||!captureArea){ if(btn) btn.style.opacity='1'; return; }
-
-    const wrapper=document.createElement('div');
-    wrapper.style.cssText='background:'+bgColor+';padding:16px;display:inline-block;min-width:'+histMain.offsetWidth+'px;box-sizing:border-box;';
-    document.body.appendChild(wrapper);
-
-    // 연도 탭 클론
-    if(yearTab){ const c=yearTab.cloneNode(true); c.style.marginBottom='8px'; wrapper.appendChild(c); }
-
-    // year-stats 클론
-    const ys=histMain.querySelector('.year-stats');
-    if(ys){ wrapper.appendChild(ys.cloneNode(true)); }
-
-    // 달성률 현황 카드 클론
-    const ca=captureArea.cloneNode(true);
-    ca.style.marginTop='10px';
-    wrapper.appendChild(ca);
-
-    html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:bgColor,scrollX:0,scrollY:0})
-    .then(canvas=>{
-      document.body.removeChild(wrapper);
-      const link=document.createElement('a');
-      link.download=`해냄_이력_${today()}.png`;
-      link.href=canvas.toDataURL('image/png');
-      link.click();
-      if(btn) btn.style.opacity='1';
-    }).catch(()=>{
-      if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
-      if(btn) btn.style.opacity='1';
-      alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
-    });
+    doCapture(()=>{
+      const wrapper=document.createElement('div');
+      wrapper.style.cssText='background:'+bgColor+';padding:16px;display:inline-block;min-width:'+histMain.offsetWidth+'px;box-sizing:border-box;';
+      document.body.appendChild(wrapper);
+      if(yearTab){ const c=yearTab.cloneNode(true); c.style.marginBottom='8px'; wrapper.appendChild(c); }
+      const ys=histMain.querySelector('.year-stats');
+      if(ys){ wrapper.appendChild(ys.cloneNode(true)); }
+      const ca=captureArea.cloneNode(true); ca.style.marginTop='10px'; wrapper.appendChild(ca);
+      return {wrapper, restoreScroll:null};
+    }, `해냄_이력_${today()}`);
     return;
   }
 
-  // 목록/대시보드: main div 전체 캡처
-  target=document.getElementById('main');
+  // 목록/대시보드
+  const target=document.getElementById('main');
   if(!target){ if(btn) btn.style.opacity='1'; return; }
-
   const scrollTop=target.scrollTop;
   target.scrollTop=0;
+  doCapture(()=>{
+    const wrapper=document.createElement('div');
+    wrapper.style.cssText='background:'+bgColor+';padding:16px;display:inline-block;min-width:'+target.offsetWidth+'px';
+    document.body.appendChild(wrapper);
+    const clone=target.cloneNode(true);
+    clone.style.cssText='position:static;overflow:visible;height:auto;padding-bottom:16px;';
+    wrapper.appendChild(clone);
+    return {wrapper, restoreScroll:()=>{ target.scrollTop=scrollTop; }};
+  }, `해냄_${viewNames[view]||view}_${today()}`);
+}
 
-  const wrapper=document.createElement('div');
-  wrapper.style.cssText='background:'+bgColor+';padding:16px;display:inline-block;min-width:'+target.offsetWidth+'px';
-  document.body.appendChild(wrapper);
-  const clone=target.cloneNode(true);
-  clone.style.cssText='position:static;overflow:visible;height:auto;padding-bottom:16px;';
-  wrapper.appendChild(clone);
+function openShareSheet(dataUrl, fileName, canvas){
+  const existing=document.getElementById('share-sheet-ov');
+  if(existing) existing.remove();
 
-  html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:bgColor,scrollX:0,scrollY:0})
-  .then(canvas=>{
-    document.body.removeChild(wrapper);
-    target.scrollTop=scrollTop;
-    const link=document.createElement('a');
-    const name=viewNames[view]||view;
-    link.download=`해냄_${name}_${today()}.png`;
-    link.href=canvas.toDataURL('image/png');
-    link.click();
-    if(btn) btn.style.opacity='1';
-  }).catch(()=>{
-    if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
-    target.scrollTop=scrollTop;
-    if(btn) btn.style.opacity='1';
-    alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
-  });
+  const ov=document.createElement('div');
+  ov.id='share-sheet-ov';
+  // Bug⑧: dataUrl을 innerHTML에 직접 삽입하지 않고 JS로 세팅
+  ov.innerHTML=`
+    <div id="share-sheet">
+      <div class="share-handle"></div>
+      <div class="share-title">${lang==='ko'?'📤 공유하기':'📤 Share'}</div>
+      <img class="share-preview" id="share-preview-img" alt="preview">
+      <div class="share-btns">
+        <button class="share-btn download" id="sh-download">
+          <div class="share-btn-icon" style="background:var(--accent-bg)">⬇️</div>
+          <div class="share-btn-text">
+            <span class="share-btn-label">${lang==='ko'?'이미지 저장':'Save Image'}</span>
+            <span class="share-btn-sub">${lang==='ko'?'기기에 PNG로 저장':'Save as PNG to device'}</span>
+          </div>
+        </button>
+        <button class="share-btn sns" id="sh-sns">
+          <div class="share-btn-icon" style="background:rgba(255,255,255,0.25)">📱</div>
+          <div class="share-btn-text">
+            <span class="share-btn-label">${lang==='ko'?'SNS / 앱 공유':'Share to SNS / Apps'}</span>
+            <span class="share-btn-sub">${lang==='ko'?'인스타그램, 카카오톡 등':'Instagram, KakaoTalk and more'}</span>
+          </div>
+        </button>
+      </div>
+      <button class="share-cancel" id="sh-cancel">${lang==='ko'?'취소':'Cancel'}</button>
+    </div>
+  `;
+
+  ov.addEventListener('click', e=>{ if(e.target===ov) closeShareSheet(); });
+  document.body.appendChild(ov);
+
+  // Bug⑧: img.src 별도 세팅 (innerHTML 파싱 부하 방지)
+  document.getElementById('share-preview-img').src = dataUrl;
+
+  // ── 다운로드 ──
+  document.getElementById('sh-download').onclick=function(){
+    const a=document.createElement('a');
+    a.download=fileName+'.png';
+    a.href=dataUrl;
+    a.click();
+    closeShareSheet();
+  };
+
+  // ── SNS 공유 (Web Share API) ──
+  document.getElementById('sh-sns').onclick=function(){
+    if(navigator.share && navigator.canShare){
+      canvas.toBlob(blob=>{
+        const file=new File([blob], fileName+'.png', {type:'image/png'});
+        if(navigator.canShare({files:[file]})){
+          navigator.share({files:[file], title:'해냄 KPI', text:lang==='ko'?'해냄으로 목표를 관리하고 있어요 🎯':'Tracking my goals with 해냄 🎯'})
+          .then(()=>closeShareSheet())
+          .catch(()=>{}); // 사용자 취소는 무시
+          return;
+        }
+        snsFallback();
+      },'image/png');
+    } else {
+      snsFallback();
+    }
+    // Bug⑨: fallback은 시트 먼저 닫고 → 다운로드 → alert 순서
+    function snsFallback(){
+      closeShareSheet();
+      const a=document.createElement('a'); a.download=fileName+'.png'; a.href=dataUrl; a.click();
+      setTimeout(()=>{
+        alert(lang==='ko'?'이미지가 저장되었어요!\n갤러리에서 SNS 앱으로 공유해 주세요 📸':'Image saved!\nShare from your gallery to SNS 📸');
+      },400);
+    }
+  };
+
+  document.getElementById('sh-cancel').onclick=closeShareSheet;
+}
+function closeShareSheet(){
+  const el=document.getElementById('share-sheet-ov');
+  if(el) el.remove();
 }
 function switchView(v){
   view=v;
