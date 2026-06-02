@@ -1967,6 +1967,8 @@ if('serviceWorker' in navigator){
         const nw=reg.installing;
         nw.addEventListener('statechange',()=>{
           if(nw.state==='installed'&&navigator.serviceWorker.controller){
+            // reload 전 현재 탭 저장
+            try{ sessionStorage.setItem('_sw_reload_view', view); }catch(e){}
             window.location.reload(true);
           }
         });
@@ -1975,11 +1977,23 @@ if('serviceWorker' in navigator){
         if(document.visibilityState==='visible') reg.update();
       });
     }).catch(e=>console.warn('[App] SW fail',e));
-    navigator.serviceWorker.addEventListener('controllerchange',()=>window.location.reload(true));
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      // reload 전 현재 탭 저장
+      try{ sessionStorage.setItem('_sw_reload_view', view); }catch(e){}
+      window.location.reload(true);
+    });
   });
 }
 
 load();
+// SW 업데이트로 인한 reload 후 탭 복원
+try{
+  const _savedView=sessionStorage.getItem('_sw_reload_view');
+  if(_savedView&&['list','dash','history','todo'].includes(_savedView)){
+    view=_savedView;
+    sessionStorage.removeItem('_sw_reload_view');
+  }
+}catch(e){}
 const _tl=T[lang];
 // AdSense 비동기 로드 (렌더 블로킹 방지)
 (function(){
