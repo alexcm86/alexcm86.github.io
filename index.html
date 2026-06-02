@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602140000 -->
+<!DOCTYPE html><!-- v20260602160000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1942,7 +1942,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602140000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602160000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
