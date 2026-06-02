@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260604010000 -->
+<!DOCTYPE html><!-- v20260604020000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1988,40 +1988,24 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260604010000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260604020000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
         const nw=reg.installing;
         nw.addEventListener('statechange',()=>{
-          if(nw.state==='installed'&&navigator.serviceWorker.controller){
-            // reload 전 현재 탭 저장
-            try{ sessionStorage.setItem('_sw_reload_view', view); }catch(e){}
-            window.location.reload(true);
-          }
+          if(nw.state==='installed') nw.postMessage({type:'SKIP_WAITING'});
         });
       });
       document.addEventListener('visibilitychange',()=>{
         if(document.visibilityState==='visible') reg.update();
       });
     }).catch(e=>console.warn('[App] SW fail',e));
-    navigator.serviceWorker.addEventListener('controllerchange',()=>{
-      // reload 전 현재 탭 저장
-      try{ sessionStorage.setItem('_sw_reload_view', view); }catch(e){}
-      window.location.reload(true);
-    });
+    // controllerchange 시 자동 reload 제거 - 다음 앱 실행 시 자연스럽게 새 버전 적용
   });
 }
 
 load();
-// SW 업데이트로 인한 reload 후 탭 복원
-try{
-  const _savedView=sessionStorage.getItem('_sw_reload_view');
-  if(_savedView&&['list','dash','history','todo'].includes(_savedView)){
-    view=_savedView;
-    sessionStorage.removeItem('_sw_reload_view');
-  }
-}catch(e){}
 const _tl=T[lang];
 // AdSense 비동기 로드 (렌더 블로킹 방지)
 (function(){
