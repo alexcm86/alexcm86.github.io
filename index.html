@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602230000 -->
+<!DOCTYPE html><!-- v20260602240000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1132,46 +1132,64 @@ function captureScreen(){
       Object.keys(styles).forEach(k=>{ saved[k]=target.style[k]; target.style[k]=styles[k]; });
       overrides.push({target, saved});
     }
+    function restoreAll(){
+      overrides.forEach(({target,saved})=>Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }));
+    }
 
-    // ① img 크기를 스타일 변경 전에 먼저 읽음 (reflow 전 정확한 값)
-    const imgSizes=[];
+    // ① 스타일 변경 전 img 원본 크기 + src 수집
+    const imgInfos=[];
     el.querySelectorAll('img').forEach(img=>{
-      imgSizes.push({img, w:img.offsetWidth, h:img.offsetHeight});
+      imgInfos.push({img, w:img.naturalWidth||img.offsetWidth, h:img.naturalHeight||img.offsetHeight,
+                     ow:img.offsetWidth, oh:img.offsetHeight, src:img.src});
     });
 
-    // ② 스크롤 컨테이너 여백/overflow 제거
+    // ② 스크롤 컨테이너 여백 제거
     el.querySelectorAll('#dash-main,#card-list,#history-main,#todo-main').forEach(e=>
       applyOverride(e,{overflow:'visible',height:'auto',maxHeight:'none',paddingBottom:'0'})
     );
     applyOverride(el,{overflow:'visible',height:'auto',paddingBottom:'0',...extraStyles});
 
-    // ③ 읽어둔 원본 크기로 img 고정 (reflow 후 찌그러진 값이 아닌 원본값)
-    imgSizes.forEach(({img,w,h})=>{
-      if(w>0&&h>0){
-        applyOverride(img,{
-          transition:'none',
-          width:w+'px', height:h+'px',
-          minWidth:w+'px', minHeight:h+'px',
-          objectFit:'contain', flexShrink:'0'
-        });
-      }
-    });
+    // ③ img를 canvas로 교체 (CORS 우회 + 크기 고정)
+    //    각 img를 동일 크기 canvas로 대체하고 나중에 복원
+    const imgReplacements=[];
+    const drawPromises=imgInfos.map(({img,ow,oh,src})=>new Promise(resolve=>{
+      if(!ow||!oh){ resolve(); return; }
+      const c=document.createElement('canvas');
+      c.width=ow; c.height=oh;
+      c.style.cssText=`width:${ow}px;height:${oh}px;flex-shrink:0;display:inline-block;`;
+      const cx=c.getContext('2d');
+      const tempImg=new Image();
+      tempImg.crossOrigin='anonymous';
+      tempImg.onload=()=>{
+        cx.drawImage(tempImg,0,0,ow,oh);
+        img.parentNode.insertBefore(c,img);
+        img.style.display='none';
+        imgReplacements.push({canvas:c,img});
+        resolve();
+      };
+      tempImg.onerror=()=>{ resolve(); }; // 실패해도 계속 진행
+      tempImg.src=src+(src.includes('?')?'&':'?')+'_t='+Date.now();
+    }));
 
-    // ④ html2canvas 직접 캡처
-    html2canvas(el,{
-      useCORS:true, scale:2, backgroundColor:bgColor,
-      scrollX:0, scrollY:0, logging:false,
-      windowWidth:el.scrollWidth, windowHeight:el.scrollHeight,
-      width:el.offsetWidth, height:el.scrollHeight
-    }).then(srcCanvas=>{
-      overrides.forEach(({target,saved})=>{ Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }); });
-      if(btn) btn.style.opacity='1';
-      const canvas=addWatermark(srcCanvas);
-      openShareSheet(canvas.toDataURL('image/png'), fileBaseName, canvas);
-    }).catch(()=>{
-      overrides.forEach(({target,saved})=>{ Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }); });
-      if(btn) btn.style.opacity='1';
-      alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
+    // ④ 모든 img canvas 변환 완료 후 캡처
+    Promise.all(drawPromises).then(()=>{
+      html2canvas(el,{
+        useCORS:true, allowTaint:true, scale:2, backgroundColor:bgColor,
+        scrollX:0, scrollY:0, logging:false,
+        width:el.offsetWidth, height:el.scrollHeight
+      }).then(srcCanvas=>{
+        // img 복원
+        imgReplacements.forEach(({canvas,img})=>{ canvas.remove(); img.style.display=''; });
+        restoreAll();
+        if(btn) btn.style.opacity='1';
+        const canvas=addWatermark(srcCanvas);
+        openShareSheet(canvas.toDataURL('image/png'), fileBaseName, canvas);
+      }).catch(()=>{
+        imgReplacements.forEach(({canvas,img})=>{ canvas.remove(); img.style.display=''; });
+        restoreAll();
+        if(btn) btn.style.opacity='1';
+        alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
+      });
     });
   }
 
@@ -1960,7 +1978,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602230000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602240000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
