@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260602190000 -->
+<!DOCTYPE html><!-- v20260602210000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -1082,7 +1082,6 @@ function toggleTheme(){
 }
 
 function captureScreen(){
-  // Bug②: html2canvas 로드 완료 확인
   if(typeof html2canvas === 'undefined'){
     alert(lang==='ko'?'캡처 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.':'Capture library is loading. Please try again shortly.');
     return;
@@ -1093,117 +1092,92 @@ function captureScreen(){
   const captureBg={dark:'#0d1117',midnight:'#0f0b1e',peach:'#fff0f0',forest:'#f0f7f0',ocean:'#e8f4f8',sunshine:'#fffde7',military:'#1e2118'};
   const bgColor=captureBg[theme]||'#f4f6fb';
 
-  function doCapture(getWrapperFn, fileBaseName){
-    const {wrapper, restoreScroll} = getWrapperFn();
-    html2canvas(wrapper,{useCORS:true,scale:2,backgroundColor:bgColor,scrollX:0,scrollY:0,logging:false})
-    .then(srcCanvas=>{
-      document.body.removeChild(wrapper);
-      if(restoreScroll) restoreScroll();
+  // 워터마크 합성
+  function addWatermark(srcCanvas){
+    const canvas=document.createElement('canvas');
+    canvas.width=srcCanvas.width;
+    canvas.height=srcCanvas.height;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(srcCanvas,0,0);
+    const sc=2, fSize=11*sc;
+    const label=`해냄 · ${today()}`;
+    ctx.save();
+    ctx.font=`600 ${fSize}px sans-serif`;
+    const tw=ctx.measureText(label).width;
+    const ph=5*sc, pv=3*sc;
+    const bw=tw+ph*2, bh=fSize+pv*2, margin=8*sc, rr=5*sc;
+    const bx=canvas.width-bw-margin, by=canvas.height-bh-margin;
+    ctx.fillStyle='rgba(0,0,0,0.32)';
+    ctx.beginPath();
+    ctx.moveTo(bx+rr,by); ctx.lineTo(bx+bw-rr,by);
+    ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+rr);
+    ctx.lineTo(bx+bw,by+bh-rr);
+    ctx.quadraticCurveTo(bx+bw,by+bh,bx+bw-rr,by+bh);
+    ctx.lineTo(bx+rr,by+bh);
+    ctx.quadraticCurveTo(bx,by+bh,bx,by+bh-rr);
+    ctx.lineTo(bx,by+rr);
+    ctx.quadraticCurveTo(bx,by,bx+rr,by);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.93)';
+    ctx.fillText(label,bx+ph,by+pv+fSize*0.85);
+    ctx.restore();
+    return canvas;
+  }
+
+  // 요소의 스타일을 임시 변경 후 캡처, 완료 후 복원
+  function captureElement(el, extraStyles, fileBaseName){
+    // 1) 변경할 요소들 수집 및 원본 스타일 저장
+    const overrides=[];
+    function applyOverride(target, styles){
+      const saved={};
+      Object.keys(styles).forEach(k=>{ saved[k]=target.style[k]; target.style[k]=styles[k]; });
+      overrides.push({target, saved});
+    }
+
+    // 스크롤 컨테이너들: overflow visible, padding-bottom 0, height auto
+    const scrollEls=el.querySelectorAll('#dash-main,#card-list,#history-main,#todo-main');
+    scrollEls.forEach(e=>applyOverride(e,{overflow:'visible',height:'auto',maxHeight:'none',paddingBottom:'0'}));
+
+    // el 자체
+    const elSaved={overflow:el.style.overflow,height:el.style.height,paddingBottom:el.style.paddingBottom};
+    applyOverride(el,{overflow:'visible',height:'auto',paddingBottom:'0',...extraStyles});
+
+    // 2) html2canvas로 직접 캡처
+    html2canvas(el,{
+      useCORS:true, scale:2, backgroundColor:bgColor,
+      scrollX:0, scrollY:0, logging:false,
+      // 실제 렌더 크기를 스크롤 높이로 지정
+      windowWidth:el.scrollWidth, windowHeight:el.scrollHeight,
+      width:el.offsetWidth, height:el.scrollHeight
+    }).then(srcCanvas=>{
+      // 3) 스타일 복원
+      overrides.forEach(({target,saved})=>{ Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }); });
       if(btn) btn.style.opacity='1';
-
-      // 워터마크: 새 canvas에 srcCanvas 복사 후 합성 (context 충돌 방지)
-      const canvas=document.createElement('canvas');
-      canvas.width=srcCanvas.width;
-      canvas.height=srcCanvas.height;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(srcCanvas,0,0);
-
-      const sc=2;
-      const fSize=11*sc;
-      const dateStr=today();
-      const label=`해냄 · ${dateStr}`;
-      ctx.save();
-      ctx.font=`600 ${fSize}px sans-serif`;
-      const tw=ctx.measureText(label).width;
-      const ph=5*sc, pv=3*sc;
-      const bw=tw+ph*2, bh=fSize+pv*2;
-      const margin=8*sc;
-      const bx=canvas.width-bw-margin;
-      const by=canvas.height-bh-margin;
-      const rr=5*sc;
-      ctx.fillStyle='rgba(0,0,0,0.32)';
-      ctx.beginPath();
-      ctx.moveTo(bx+rr,by);
-      ctx.lineTo(bx+bw-rr,by);
-      ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+rr);
-      ctx.lineTo(bx+bw,by+bh-rr);
-      ctx.quadraticCurveTo(bx+bw,by+bh,bx+bw-rr,by+bh);
-      ctx.lineTo(bx+rr,by+bh);
-      ctx.quadraticCurveTo(bx,by+bh,bx,by+bh-rr);
-      ctx.lineTo(bx,by+rr);
-      ctx.quadraticCurveTo(bx,by,bx+rr,by);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle='rgba(255,255,255,0.93)';
-      ctx.fillText(label,bx+ph,by+pv+fSize*0.85);
-      ctx.restore();
-
-      const dataUrl=canvas.toDataURL('image/png');
-      openShareSheet(dataUrl, fileBaseName, canvas);
+      const canvas=addWatermark(srcCanvas);
+      openShareSheet(canvas.toDataURL('image/png'), fileBaseName, canvas);
     }).catch(()=>{
-      if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
-      if(restoreScroll) restoreScroll();
+      overrides.forEach(({target,saved})=>{ Object.keys(saved).forEach(k=>{ target.style[k]=saved[k]; }); });
       if(btn) btn.style.opacity='1';
       alert(lang==='ko'?'캡처에 실패했어요.':'Capture failed.');
     });
   }
 
-  // 이력 탭
+  // ── 이력 탭: hist-capture-area 만 캡처 ──
   if(view==='history'){
-    const yearTab=document.getElementById('year-tab-bar');
-    const histMain=document.getElementById('history-main');
     const captureArea=document.getElementById('hist-capture-area');
-    if(!histMain||!captureArea){ if(btn) btn.style.opacity='1'; return; }
-    doCapture(()=>{
-      const wrapper=document.createElement('div');
-      wrapper.style.cssText='background:'+bgColor+';padding:16px;display:inline-block;min-width:'+histMain.offsetWidth+'px;box-sizing:border-box;';
-      document.body.appendChild(wrapper);
-      if(yearTab){ const c=yearTab.cloneNode(true); c.style.marginBottom='8px'; wrapper.appendChild(c); }
-      const ys=histMain.querySelector('.year-stats');
-      if(ys){ wrapper.appendChild(ys.cloneNode(true)); }
-      const ca=captureArea.cloneNode(true); ca.style.marginTop='10px'; wrapper.appendChild(ca);
-      return {wrapper, restoreScroll:null};
-    }, `해냄_이력_${today()}`);
+    if(!captureArea){ if(btn) btn.style.opacity='1'; return; }
+    captureElement(captureArea, {marginBottom:'0'}, `해냄_이력_${today()}`);
     return;
   }
 
-  // 목록/대시보드
-  const target=document.getElementById('main');
-  if(!target){ if(btn) btn.style.opacity='1'; return; }
-  const scrollTop=target.scrollTop;
-  target.scrollTop=0;
-  doCapture(()=>{
-    const wrapper=document.createElement('div');
-    wrapper.style.cssText='background:'+bgColor+';padding:16px;display:inline-block;min-width:'+target.offsetWidth+'px';
-    document.body.appendChild(wrapper);
-    const clone=target.cloneNode(true);
-    // 하단 여백 완전 제거
-    clone.style.cssText='position:static;overflow:visible;height:auto;padding:0;margin:0;';
-    // #dash-main / #card-list 등 내부 스크롤 컨테이너 여백 제거
-    clone.querySelectorAll('#dash-main,#card-list,#history-main,#todo-main').forEach(el=>{
-      el.style.paddingBottom='0';
-      el.style.overflow='visible';
-      el.style.height='auto';
-      el.style.maxHeight='none';
-    });
-    // 캐릭터 이미지: 원본 offsetWidth/Height를 직접 읽어 명시 고정
-    const origImgs=[...target.querySelectorAll('img')];
-    const cloneImgs=[...clone.querySelectorAll('img')];
-    origImgs.forEach((orig,i)=>{
-      if(!cloneImgs[i]) return;
-      const w=orig.offsetWidth, h=orig.offsetHeight;
-      if(w>0&&h>0){
-        cloneImgs[i].style.width=w+'px';
-        cloneImgs[i].style.height=h+'px';
-        cloneImgs[i].style.minWidth=w+'px';
-        cloneImgs[i].style.minHeight=h+'px';
-        cloneImgs[i].style.objectFit='contain';
-        cloneImgs[i].style.flexShrink='0';
-      }
-    });
-    wrapper.appendChild(clone);
-    return {wrapper, restoreScroll:()=>{ target.scrollTop=scrollTop; }};
-  }, `해냄_${viewNames[view]||view}_${today()}`);
+  // ── 목록 / 대시보드 / 할일 ──
+  const main=document.getElementById('main');
+  if(!main){ if(btn) btn.style.opacity='1'; return; }
+  const savedScroll=main.scrollTop;
+  main.scrollTop=0;
+  captureElement(main, {}, `해냄_${viewNames[view]||view}_${today()}`);
+  // 스크롤 복원은 캡처 완료 후 (captureElement 내부에서 overrides 복원 시점에 맞게)
+  setTimeout(()=>{ main.scrollTop=savedScroll; }, 100);
 }
 
 function openShareSheet(dataUrl, fileName, canvas){
@@ -1973,7 +1947,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260602190000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260602210000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
