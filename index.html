@@ -596,6 +596,14 @@ const HAENAEM_IMGS_SUNSHINE = [
   'https://alexcm86.github.io/s5.png', // S5 꿀벌 해바라기 만세 (80~99%)
   'https://alexcm86.github.io/s6.png', // S6 꿀벌 해바라기 만개 (100%)
 ];
+const HAENAEM_IMGS_STONE = [
+  'https://alexcm86.github.io/st1.png', // S1 체인 화분 새싹1 (0~19%)
+  'https://alexcm86.github.io/st2.png', // S2 씩씩한 눈빛 새싹2 (20~39%)
+  'https://alexcm86.github.io/st3.png', // S3 윙크+V 새싹3 (40~59%)
+  'https://alexcm86.github.io/st4.png', // S4 선글라스 여유 새싹4 (60~79%)
+  'https://alexcm86.github.io/st5.png', // S5 팔짱 파이팅 (80~99%)
+  'https://alexcm86.github.io/st6.png', // S6 꽃 만개+록스타 (100%)
+];
 function getHaenaemImgs() {
   if (theme === 'military') return HAENAEM_IMGS_MILITARY;
   if (theme === 'peach') return HAENAEM_IMGS_PEACH;
@@ -604,6 +612,7 @@ function getHaenaemImgs() {
   if (theme === 'dark') return HAENAEM_IMGS_DARK;
   if (theme === 'forest') return HAENAEM_IMGS_FOREST;
   if (theme === 'sunshine') return HAENAEM_IMGS_SUNSHINE;
+  if (theme === 'stone') return HAENAEM_IMGS_STONE;
   return HAENAEM_IMGS;
 }
 
@@ -1386,7 +1395,7 @@ function renderDash(){
       <div style="font-size:11px;font-weight:600;color:${theme==='stone'?(avg>=100?'#57534e':avg>=60?'#44403c':'var(--accent)'):(avg>=100?'#f5a623':avg>=60?'#059669':'var(--accent)')};margin-top:2px">${haenaemMsg}</div>
     </div>
     <div style="width:110px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:8px 6px">
-      <img src="${haenaemSrc}" alt="해냄이" style="width:96px;height:96px;object-fit:contain;flex-shrink:0;${isComplete?'filter:drop-shadow(0 0 12px rgba(245,166,35,0.7))':'filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15))'}">
+      <img src="${haenaemSrc}" alt="해냄이" style="width:${theme==='stone'?'104px':'96px'};height:${theme==='stone'?'104px':'96px'};object-fit:contain;flex-shrink:0;${isComplete?'filter:drop-shadow(0 0 12px rgba(245,166,35,0.7))':'filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15))'}">
     </div>
   </div>`;
 
