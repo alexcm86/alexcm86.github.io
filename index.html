@@ -1664,7 +1664,7 @@ function renderHistory(){
             ? `<div style="font-size:12px;color:var(--mute);padding:8px 0">${t('noYearLog')}</div>`
             : [...yrGoalLogs].reverse().map(l=>`
               <div class="hist-log-row">
-                <div class="hist-log-date">${l.date}</div>
+                <div class="hist-log-date">${l.date}${l.time?'<br><span style="font-size:10px;color:var(--mute)">'+l.time+'</span>':''}</div>
                 <div class="hist-log-val" style="background:${bg};color:${color}">+${fmt(l.value)} ${esc(g.unit||'')}</div>
                 ${l.note?`<div class="hist-log-note">${esc(l.note)}</div>`:''}
               </div>`).join('')
@@ -1924,7 +1924,9 @@ function saveLog(id){
   const i=goals.findIndex(x=>x.id===id);
   if(i===-1) return;
   const logDate=document.getElementById('l-date')?.value||today();
-  goals[i].logs.push({date:logDate,value:val,note});
+  const nowT=new Date();
+  const logTime=String(nowT.getHours()).padStart(2,'0')+':'+String(nowT.getMinutes()).padStart(2,'0')+':'+String(nowT.getSeconds()).padStart(2,'0');
+  goals[i].logs.push({date:logDate,time:logTime,value:val,note});
   goals[i].current=goals[i].logs.reduce((s,l)=>s+l.value,0);
   save();closeModal();render();
 }
@@ -1933,7 +1935,7 @@ function editLog(gid,idx){
   if(!g||!g.logs[idx]) return;
   const l=g.logs[idx];
   showModal(`<div class="modal-title">${lang==='ko'?'기록 수정':'Edit Record'}</div>
-    <div style="font-size:12px;color:var(--sub);margin-bottom:14px">${esc(g.title)} · ${l.date}</div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:14px">${esc(g.title)} · ${l.date}${l.time?' '+l.time:''}</div>
     <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">${lang==='ko'?'값':'Value'} (${esc(g.unit)})</label>
     <input id="elv" type="number" step="any" inputmode="decimal" value="${l.value}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;margin-bottom:10px;box-sizing:border-box;background:var(--input-bg);color:var(--text)">
     <label style="font-size:12px;color:var(--sub);display:block;margin-bottom:4px">${lang==='ko'?'메모':'Note'}</label>
@@ -1977,7 +1979,7 @@ function openHist(id){
       const l=item.l, i=item.i;
       rows+='<div style="padding:8px 0;border-bottom:1px solid var(--row-divider)">'
         +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">'
-        +'<span style="font-size:11px;color:var(--muted2);flex-shrink:0">'+l.date+'</span>'
+        +'<span style="font-size:11px;color:var(--muted2);flex-shrink:0">'+l.date+(l.time?' <span style="font-size:10px">'+l.time+'</span>':'')+'</span>'
         +'<span class="hist-val" style="background:'+bg+';color:'+color+'">+'+fmt(l.value)+' '+esc(g.unit)+'</span>'
         +(l.note?'<span style="font-size:11px;color:var(--sub)">'+esc(l.note)+'</span>':'')
         +'</div>'
