@@ -1702,6 +1702,7 @@ function renderCard(g){
   const dashOffset=(dashTotal*(1-dispPct/100)).toFixed(1);
   const ringTrack={dark:'#2d333b',midnight:'#2e2550',military:'#2e3526',stone:'#d6d3ce'};
   const ringTrackColor=ringTrack[theme]||'#f0f0f0';
+  const ring=`<svg class="ring-svg" viewBox="0 0 44 44">
     <circle cx="22" cy="22" r="18" fill="none" stroke="${ringTrackColor}" stroke-width="3.5"/>
     <circle cx="22" cy="22" r="18" fill="none" stroke="${color}" stroke-width="3.5"
       stroke-dasharray="${dashTotal.toFixed(1)}" stroke-dashoffset="${dashOffset}" stroke-linecap="round"/>
