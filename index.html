@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260604020000 -->
+<!DOCTYPE html><!-- v20260604120000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -834,7 +834,7 @@ function dismissQuote(){
   if(el){el.style.opacity='0';el.style.transform='translateY(-8px)';setTimeout(()=>el.remove(),300);}
 }
 
-let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='military';
+let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='default';
 let cardScale=100;
 let _todayCache='';
 const SCALE_STEP=5, SCALE_MIN=40, SCALE_MAX=100;
@@ -862,13 +862,13 @@ function load(){
     const raw=localStorage.getItem(STORAGE_KEY);
     if(!raw) throw new Error('empty');
     const d=JSON.parse(raw);
-    goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'military'; applyTheme(theme,true);
+    goals=d.goals||[]; todos=d.todos||[]; cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'default'; applyTheme(theme,true);
     // 오늘 이전 날짜 할일 자동 삭제
     const todayStr=today();
     const before=todos.length;
     todos=todos.filter(td=>td.date>=todayStr);
     if(todos.length!==before) save();
-  }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='military';applyTheme('military',true);}
+  }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='default';applyTheme('default',true);}
 }
 function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
 
@@ -921,7 +921,7 @@ function importData(e){
       if(d.todos) todos=d.todos;
       if(d.scale!=null) cardScale=d.scale;
       if(d.lang) lang=d.lang;
-      if(d.theme) applyTheme(d.theme,true); else applyTheme('military',true);
+      if(d.theme) applyTheme(d.theme,true); else applyTheme('default',true);
       // 복원 시에도 오늘 이전 todos 삭제
       const todayStr=today();
       todos=todos.filter(td=>td.date>=todayStr);
@@ -1385,7 +1385,7 @@ function renderDash(){
     <div class="stat-card"><div class="stat-val">${total}${lang==='ko'?'<sub>개</sub>':''}</div><div class="stat-label">${t("totalKpi")}</div></div>
     <div class="stat-card"><div class="stat-val">${done}${lang==='ko'?'<sub>개</sub>':''}</div><div class="stat-label">${t("doneCnt")}</div></div>
   </div>
-  <div class="stat-card" style="margin-bottom:10px;padding:0;overflow:hidden;display:flex;align-items:center;min-height:110px;${isComplete?'border:2px solid #f5a623;box-shadow:0 0 20px rgba(245,166,35,0.35)':''}">
+  <div class="stat-card" style="margin-bottom:10px;padding:0;overflow:hidden;display:flex;align-items:center;min-height:110px;${isComplete?(theme==='stone'?'border:2px solid #57534e;box-shadow:0 0 20px rgba(87,83,78,0.35)':'border:2px solid #f5a623;box-shadow:0 0 20px rgba(245,166,35,0.35)'):''}">
     <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:16px 12px 16px 18px;gap:4px">
       <div style="font-size:12px;color:var(--sub);text-align:left">${t("avgPct")}</div>
       <div class="stat-val" style="font-size:36px;justify-content:flex-start;color:var(--text)">${avg}<sub style="font-size:16px;color:var(--sub)">%</sub></div>
@@ -1395,7 +1395,7 @@ function renderDash(){
       <div style="font-size:11px;font-weight:600;color:${theme==='stone'?(avg>=100?'#57534e':avg>=60?'#44403c':'var(--accent)'):(avg>=100?'#f5a623':avg>=60?'#059669':'var(--accent)')};margin-top:2px">${haenaemMsg}</div>
     </div>
     <div style="width:110px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:8px 6px">
-      <img src="${haenaemSrc}" alt="해냄이" style="width:${theme==='stone'?'104px':'96px'};height:${theme==='stone'?'104px':'96px'};object-fit:contain;flex-shrink:0;${isComplete?'filter:drop-shadow(0 0 12px rgba(245,166,35,0.7))':'filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15))'}">
+      <img src="${haenaemSrc}" alt="해냄이" style="width:${theme==='stone'?'104px':'96px'};height:${theme==='stone'?'104px':'96px'};object-fit:contain;flex-shrink:0;${isComplete?(theme==='stone'?'filter:drop-shadow(0 0 12px rgba(87,83,78,0.6))':'filter:drop-shadow(0 0 12px rgba(245,166,35,0.7))'):'filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15))'}">
     </div>
   </div>`;
 
@@ -1488,7 +1488,7 @@ function drawDonut(){
     startAngle+=slice;
   });
   // gap between slices for cleaner look
-  const holeColor={dark:'#161b22',peach:'#fff8f6',forest:'#ffffff',ocean:'#ffffff',midnight:'#1a1530',sunshine:'#ffffff',military:'#252b1f'};
+  const holeColor={dark:'#161b22',peach:'#fff8f6',forest:'#ffffff',ocean:'#ffffff',midnight:'#1a1530',sunshine:'#ffffff',military:'#252b1f',stone:'#ffffff'};
   ctx.beginPath();
   ctx.arc(cx,cy,innerR-1,0,2*Math.PI);
   ctx.fillStyle=holeColor[theme]||'#ffffff';
@@ -1574,7 +1574,7 @@ function renderHistory(){
   }
 
   // 달성률 현황 - 이력 전용 스타일 (링+퍼센트 타임라인)
-  const ringTrack={dark:'#2d333b',midnight:'#2e2550',military:'#2e3526'};
+  const ringTrack={dark:'#2d333b',midnight:'#2e2550',military:'#2e3526',stone:'#d6d3ce'};
   const yrSorted=[...yrGoals].sort((a,b)=>pctVal(b)-pctVal(a));
   const dashTot=2*Math.PI*14;
   h+=`<div class="section-card" id="hist-capture-area" style="margin-bottom:10px">
@@ -1700,9 +1700,8 @@ function renderCard(g){
   // SVG ring: viewBox 고정(0 0 44 44), CSS로 크기 제어 → 깨짐 없음
   const dashTotal=2*Math.PI*18; // r=18
   const dashOffset=(dashTotal*(1-dispPct/100)).toFixed(1);
-  const ringTrack={dark:'#2d333b',midnight:'#2e2550',military:'#2e3526'};
+  const ringTrack={dark:'#2d333b',midnight:'#2e2550',military:'#2e3526',stone:'#d6d3ce'};
   const ringTrackColor=ringTrack[theme]||'#f0f0f0';
-  const ring=`<svg class="ring-svg" viewBox="0 0 44 44">
     <circle cx="22" cy="22" r="18" fill="none" stroke="${ringTrackColor}" stroke-width="3.5"/>
     <circle cx="22" cy="22" r="18" fill="none" stroke="${color}" stroke-width="3.5"
       stroke-dasharray="${dashTotal.toFixed(1)}" stroke-dashoffset="${dashOffset}" stroke-linecap="round"/>
@@ -2026,7 +2025,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260604020000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260604120000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
