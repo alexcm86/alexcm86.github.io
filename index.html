@@ -217,6 +217,31 @@
     --todo-tag-color:#8a6a00;
     --row-divider:#ffe8a0;
   }
+  /* 스톤 테마 (무채색) */
+  body.theme-stone{
+    --bg:#f0efed;--card:#ffffff;--border:#d6d3ce;
+    --text:#1c1917;--sub:#78716c;--mute:#d6d3ce;
+    --shadow:0 4px 20px rgba(28,25,23,0.10);
+    --header-bg:linear-gradient(135deg,#1c1917 0%,#292524 60%,#44403c 100%);
+    --header-shadow:rgba(0,0,0,0.45);
+    --tab-active-color:#44403c;
+    --logo-span:#a8a29e;
+    --bar-track:#e7e5e4;
+    --divider:#e7e5e4;
+    --accent:#44403c;
+    --accent2:#57534e;
+    --accent3:#78716c;
+    --accent-bg:#e7e5e4;
+    --accent-border:#d6d3ce;
+    --input-border:#d6d3ce;
+    --input-bg:#fafaf9;
+    --muted2:#a8a29e;
+    --muted3:#d6d3ce;
+    --todo-text:#1c1917;
+    --todo-tag-bg:#e7e5e4;
+    --todo-tag-color:#78716c;
+    --row-divider:#e7e5e4;
+  }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden;-webkit-font-smoothing:antialiased;font-synthesis:none}
   body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
@@ -694,6 +719,8 @@ const CAT_COLOR_MILITARY={업무:'#8a9e52',개인:'#7a9e72',운동:'#b8a84a',학
 const CAT_BG_MILITARY={업무:'#2a3020',개인:'#243020',운동:'#2e2e18',학습:'#283420',재무:'#302a18'};
 const CAT_COLOR_SUNSHINE={업무:'#f5c842',개인:'#f4a96a',운동:'#a8c97a',학습:'#f7d97a',재무:'#f4b07a'};
 const CAT_BG_SUNSHINE={업무:'#fffbe0',개인:'#fff0e0',운동:'#f4fadf',학습:'#fffce8',재무:'#fff4e0'};
+const CAT_COLOR_STONE={업무:'#1c1917',개인:'#57534e',운동:'#a8a29e',학습:'#78716c',재무:'#292524'};
+const CAT_BG_STONE={업무:'#d6d3ce',개인:'#e7e5e4',운동:'#f5f4f3',학습:'#ede9e7',재무:'#c9c7c4'};
 function getCAT_COLOR(){
   if(theme==='peach') return CAT_COLOR_PEACH;
   if(theme==='dark')  return CAT_COLOR_DARK;
@@ -702,6 +729,7 @@ function getCAT_COLOR(){
   if(theme==='midnight') return CAT_COLOR_MIDNIGHT;
   if(theme==='sunshine') return CAT_COLOR_SUNSHINE;
   if(theme==='military') return CAT_COLOR_MILITARY;
+  if(theme==='stone') return CAT_COLOR_STONE;
   return CAT_COLOR_DEFAULT;
 }
 function getCAT_BG(){
@@ -712,6 +740,7 @@ function getCAT_BG(){
   if(theme==='midnight') return CAT_BG_MIDNIGHT;
   if(theme==='sunshine') return CAT_BG_SUNSHINE;
   if(theme==='military') return CAT_BG_MILITARY;
+  if(theme==='stone') return CAT_BG_STONE;
   return CAT_BG_DEFAULT;
 }
 // CAT_COLOR/CAT_BG는 렌더 시점에 getCAT_COLOR()/getCAT_BG()로 직접 호출
@@ -1057,10 +1086,10 @@ function deleteTodo(id){
 
 function applyTheme(t,skipSaveRender=false){
   theme=t;
-  const cls={peach:'theme-peach',dark:'theme-dark',forest:'theme-forest',ocean:'theme-ocean',midnight:'theme-midnight',sunshine:'theme-sunshine',military:'theme-military'};
+  const cls={peach:'theme-peach',dark:'theme-dark',forest:'theme-forest',ocean:'theme-ocean',midnight:'theme-midnight',sunshine:'theme-sunshine',military:'theme-military',stone:'theme-stone'};
   document.body.className=cls[t]||'';
   const btn=document.getElementById('theme-btn');
-  const ico={peach:'🌸',dark:'🌙',forest:'🌿',ocean:'🌊',midnight:'🔮',sunshine:'☀️',military:'🪖'};
+  const ico={peach:'🌸',dark:'🌙',forest:'🌿',ocean:'🌊',midnight:'🔮',sunshine:'☀️',military:'🪖',stone:'🪨'};
   if(btn) btn.textContent=ico[t]||'🎨';
   preloadThemeImages(t);
   if(!skipSaveRender){save();render();}
@@ -1080,7 +1109,7 @@ function preloadThemeImages(t) {
   });
 }
 function toggleTheme(){
-  const order=['default','peach','sunshine','forest','ocean','military','dark','midnight'];
+  const order=['default','peach','sunshine','forest','ocean','military','dark','midnight','stone'];
   const idx=order.indexOf(theme);
   const next=order[(idx+1)%order.length];
   applyTheme(next);
@@ -1094,7 +1123,7 @@ function captureScreen(){
   const viewNames={list:'목록',dash:'대시보드',history:'이력',todo:'할일'};
   const btn=document.getElementById('btn-capture');
   if(btn) btn.style.opacity='0';
-  const captureBg={dark:'#0d1117',midnight:'#0f0b1e',peach:'#fff0f0',forest:'#f0f7f0',ocean:'#e8f4f8',sunshine:'#fffde7',military:'#1e2118'};
+  const captureBg={dark:'#0d1117',midnight:'#0f0b1e',peach:'#fff0f0',forest:'#f0f7f0',ocean:'#e8f4f8',sunshine:'#fffde7',military:'#1e2118',stone:'#f0efed'};
   const bgColor=captureBg[theme]||'#f4f6fb';
 
   // 워터마크 합성
@@ -1352,9 +1381,9 @@ function renderDash(){
       <div style="font-size:12px;color:var(--sub);text-align:left">${t("avgPct")}</div>
       <div class="stat-val" style="font-size:36px;justify-content:flex-start;color:var(--text)">${avg}<sub style="font-size:16px;color:var(--sub)">%</sub></div>
       <div style="height:6px;background:var(--bar-track,#f0f0f0);border-radius:99px;overflow:hidden;margin-top:4px">
-        <div style="height:100%;width:${Math.min(100,avg)}%;background:${avg>=100?'linear-gradient(90deg,#f5a623,#fbbf24)':avg>=60?'linear-gradient(90deg,#059669,#34d399)':'linear-gradient(90deg,var(--accent),var(--accent2))'};border-radius:99px;transition:width 0.6s ease"></div>
+        <div style="height:100%;width:${Math.min(100,avg)}%;background:${theme==='stone'?(avg>=100?'linear-gradient(90deg,#57534e,#78716c)':avg>=60?'linear-gradient(90deg,#44403c,#6b6560)':'linear-gradient(90deg,#a8a29e,#78716c)'):(avg>=100?'linear-gradient(90deg,#f5a623,#fbbf24)':avg>=60?'linear-gradient(90deg,#059669,#34d399)':'linear-gradient(90deg,var(--accent),var(--accent2))')};border-radius:99px;transition:width 0.6s ease"></div>
       </div>
-      <div style="font-size:11px;font-weight:600;color:${avg>=100?'#f5a623':avg>=60?'#059669':'var(--accent)'};margin-top:2px">${haenaemMsg}</div>
+      <div style="font-size:11px;font-weight:600;color:${theme==='stone'?(avg>=100?'#57534e':avg>=60?'#44403c':'var(--accent)'):(avg>=100?'#f5a623':avg>=60?'#059669':'var(--accent)')};margin-top:2px">${haenaemMsg}</div>
     </div>
     <div style="width:110px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:8px 6px">
       <img src="${haenaemSrc}" alt="해냄이" style="width:96px;height:96px;object-fit:contain;flex-shrink:0;${isComplete?'filter:drop-shadow(0 0 12px rgba(245,166,35,0.7))':'filter:drop-shadow(0 4px 8px rgba(0,0,0,0.15))'}">
