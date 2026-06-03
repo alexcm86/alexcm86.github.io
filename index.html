@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20260604120000 -->
+<!DOCTYPE html><!-- v20260604150000 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -604,6 +604,10 @@ const HAENAEM_IMGS_STONE = [
   'https://alexcm86.github.io/st5.png', // S5 팔짱 파이팅 (80~99%)
   'https://alexcm86.github.io/st6.png', // S6 꽃 만개+록스타 (100%)
 ];
+// ── 링 트랙 색 (전역 - renderCard, renderHistory 공용) ──
+const RING_TRACK={dark:'#2d333b',midnight:'#2e2550',military:'#2e3526',stone:'#d6d3ce'};
+function getRingTrackColor(){return RING_TRACK[theme]||'#f0f0f0';}
+
 function getHaenaemImgs() {
   if (theme === 'military') return HAENAEM_IMGS_MILITARY;
   if (theme === 'peach') return HAENAEM_IMGS_PEACH;
@@ -844,6 +848,7 @@ const SCALE_STEP=5, SCALE_MIN=40, SCALE_MAX=100;
 let fabTimer=null;
 const fab=document.getElementById('fab');
 function resetFabTimer(){
+  if(!fab) return;
   fab.classList.remove('hidden');
   clearTimeout(fabTimer);
   fabTimer=setTimeout(()=>fab.classList.add('hidden'),2000);
@@ -941,16 +946,23 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function pctVal(g){const c=Number(g.current)||0,t=Number(g.target)||0;return t>0?Math.round((c/t)*100):0;}
 
 function render(){
-  _todayCache = today();
-  if(view==='dash') document.getElementById('main').innerHTML=renderDash();
-  else if(view==='history') document.getElementById('main').innerHTML=renderHistory();
-  else if(view==='todo') document.getElementById('main').innerHTML=renderTodo();
-  else document.getElementById('main').innerHTML=renderList();
-  if(view==='list'){applyScale();initDrag();}
-  if(view==='dash') drawCharts();
-  // todo/dash/history 탭에서는 FAB 숨기기
-  if(view==='list'){ fab.style.display='flex'; resetFabTimer(); }
-  else { fab.style.display='none'; clearTimeout(fabTimer); }
+  try{
+    _todayCache = today();
+    const main=document.getElementById('main');
+    if(!main) return;
+    if(view==='dash') main.innerHTML=renderDash();
+    else if(view==='history') main.innerHTML=renderHistory();
+    else if(view==='todo') main.innerHTML=renderTodo();
+    else main.innerHTML=renderList();
+    if(view==='list'){applyScale();initDrag();}
+    if(view==='dash') drawCharts();
+    if(view==='list'){ fab.style.display='flex'; resetFabTimer(); }
+    else { fab.style.display='none'; clearTimeout(fabTimer); }
+  }catch(e){
+    console.error('[해냄] render error:',e);
+    const main=document.getElementById('main');
+    if(main) main.innerHTML=`<div style="padding:40px 20px;text-align:center;color:var(--sub)"><div style="font-size:32px;margin-bottom:12px">⚠️</div><div style="font-size:14px;font-weight:600">화면 로딩 오류가 발생했어요</div><div style="font-size:12px;margin-top:8px;opacity:0.7">탭을 다시 눌러주세요</div></div>`;
+  }
 }
 
 
@@ -1574,7 +1586,7 @@ function renderHistory(){
   }
 
   // 달성률 현황 - 이력 전용 스타일 (링+퍼센트 타임라인)
-  const ringTrack={dark:'#2d333b',midnight:'#2e2550',military:'#2e3526',stone:'#d6d3ce'};
+  const ringTrackColor=getRingTrackColor();
   const yrSorted=[...yrGoals].sort((a,b)=>pctVal(b)-pctVal(a));
   const dashTot=2*Math.PI*14;
   h+=`<div class="section-card" id="hist-capture-area" style="margin-bottom:10px">
@@ -1625,7 +1637,7 @@ function renderHistory(){
         <div class="hist-goal-header" onclick="toggleHistGoal('${gid}')">
           <div style="flex-shrink:0">
             <svg width="32" height="32" viewBox="0 0 44 44" style="transform:rotate(-90deg)">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="${ringTrack[theme]||'#f0f0f0'}" stroke-width="4"/>
+              <circle cx="22" cy="22" r="18" fill="none" stroke="${ringTrackColor}" stroke-width="4"/>
               <circle cx="22" cy="22" r="18" fill="none" stroke="${color}" stroke-width="4"
                 stroke-dasharray="${(2*Math.PI*18).toFixed(1)}"
                 stroke-dashoffset="${(2*Math.PI*18*(1-disp/100)).toFixed(1)}"
@@ -1698,10 +1710,9 @@ function renderCard(g){
     dday=`<span style="font-size:var(--fsXS,9px);color:${col}">${diff>0?'D-'+diff:diff===0?(lang==='ko'?'오늘':'Today'):'D+'+Math.abs(diff)}</span>`;
   }
   // SVG ring: viewBox 고정(0 0 44 44), CSS로 크기 제어 → 깨짐 없음
-  const dashTotal=2*Math.PI*18; // r=18
+  const dashTotal=2*Math.PI*18;
   const dashOffset=(dashTotal*(1-dispPct/100)).toFixed(1);
-  const ringTrack={dark:'#2d333b',midnight:'#2e2550',military:'#2e3526',stone:'#d6d3ce'};
-  const ringTrackColor=ringTrack[theme]||'#f0f0f0';
+  const ringTrackColor=getRingTrackColor();
   const ring=`<svg class="ring-svg" viewBox="0 0 44 44">
     <circle cx="22" cy="22" r="18" fill="none" stroke="${ringTrackColor}" stroke-width="3.5"/>
     <circle cx="22" cy="22" r="18" fill="none" stroke="${color}" stroke-width="3.5"
@@ -2026,7 +2037,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20260604120000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20260604150000').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
