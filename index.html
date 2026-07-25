@@ -505,30 +505,6 @@
 </div>
 
 <div id="main"></div>
-<!-- 배너 광고 영역 -->
-<div id="ad-banner" style="
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:480px;
-  background:#fff;border-top:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  padding:6px 8px;z-index:15;
-  min-height:68px;
-">
-  <!-- 24시간 숨기기 버튼 -->
-  <button id="ad-close-btn" onclick="hideAdFor24h()" style="
-    position:absolute;top:4px;right:6px;
-    background:rgba(0,0,0,0.12);border:none;border-radius:50%;
-    width:18px;height:18px;font-size:10px;color:#888;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
-    line-height:1;z-index:16;padding:0;
-  ">✕</button>
-  <ins class="adsbygoogle"
-       style="display:block;width:100%;max-width:468px;height:60px"
-       data-ad-client="ca-pub-8440663734931688"
-       data-ad-slot="XXXXXXXXXX"
-       data-ad-format="horizontal"
-       data-full-width-responsive="false"></ins>
-</div>
 <button id="fab" onclick="openAddModal()">+</button>
 
 <script>
@@ -2058,15 +2034,6 @@ if('serviceWorker' in navigator){
 
 load();
 const _tl=T[lang];
-// AdSense 비동기 로드 (렌더 블로킹 방지)
-(function(){
-  var s=document.createElement('script');
-  s.async=true;
-  s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8440663734931688';
-  s.crossOrigin='anonymous';
-  s.onload=function(){(window.adsbygoogle=window.adsbygoogle||[]).push({});};
-  document.head.appendChild(s);
-})();
 const _tli=document.getElementById('tab-list');
 const _tdi=document.getElementById('tab-dash');
 const _thi=document.getElementById('tab-hist');
