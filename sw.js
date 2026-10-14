@@ -1,5 +1,5 @@
-// sw.js v20260604150000
-const CACHE_NAME = 'haenaem-v20260604150000';
+// sw.js v20261015080000
+const CACHE_NAME = 'haenaem-v20261015080000';
 
 const STATIC_ASSETS = [
   '/',
@@ -104,8 +104,10 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
         .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          if (res.ok) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
+          }
           return res;
         })
         .catch(() => caches.match('/index.html'))
