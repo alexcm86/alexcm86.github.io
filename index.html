@@ -1,4 +1,4 @@
-<!DOCTYPE html><!-- v20261015080000 -->
+<!DOCTYPE html><!-- v20261029223700 -->
 <html lang="ko">
 <head>
 <meta name="description" content="해냄 - KPI 목표 관리 앱">
@@ -280,27 +280,22 @@
   .tab-btn.active{background:#ffffff;color:var(--tab-active-color);box-shadow:0 1px 6px rgba(0,0,0,0.15);font-weight:700}
 
 
-  /* Todo */
-  #todo-main{flex:1;overflow-y:auto;padding:12px 16px;padding-bottom:calc(100px + var(--safe-bottom));}
-  .todo-date{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:12px;}
-  .todo-add-bar{display:flex;gap:8px;margin-bottom:16px;}
-  .todo-input{flex:1;padding:10px 14px;border-radius:12px;border:1.5px solid var(--input-border);font-size:14px;font-family:inherit;outline:none;background:var(--input-bg);color:var(--todo-text);}
-  .todo-input:focus{border-color:var(--accent3);}
-  .todo-add-btn{padding:10px 16px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;}
-  .todo-section-label{font-size:11px;font-weight:700;color:var(--muted2);letter-spacing:0.5px;margin:8px 0 6px;text-transform:uppercase;}
-  .todo-item{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 6px rgba(0,0,0,0.06);cursor:pointer;transition:all .15s;}
-  .todo-item.done{opacity:0.5;}
-  .todo-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
-  .todo-item.done .todo-check{background:var(--accent3);border-color:var(--accent3);}
-  .todo-check-icon{color:#fff;font-size:12px;display:none;}
-  .todo-item.done .todo-check-icon{display:block;}
-  .todo-text{flex:1;font-size:14px;font-weight:500;color:var(--todo-text);}
-  .todo-item.done .todo-text{text-decoration:line-through;color:var(--muted2);}
-  .todo-kpi-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;background:var(--todo-tag-bg);color:var(--todo-tag-color);}
-  .todo-del{font-size:16px;color:var(--muted3);padding:2px 4px;cursor:pointer;flex-shrink:0;}
-  .todo-del:hover{color:#ef4444;}
-  .todo-kpi-select{width:100%;margin-top:8px;padding:8px 12px;border-radius:14px;border:1.5px solid var(--input-border);font-size:13px;font-family:inherit;outline:none;background:var(--input-bg);color:var(--todo-tag-color);}
-  .todo-empty{text-align:center;padding:48px 0;color:var(--muted2);font-size:14px;}
+  /* 기록 (연도별 달성/미달성) */
+  #rec-main{flex:1;overflow-y:auto;padding-bottom:calc(130px + var(--safe-bottom));}
+  .rec-sec-head{display:flex;align-items:center;gap:8px;margin:14px 0 8px;}
+  .rec-sec-title{font-size:13px;font-weight:800;color:var(--text);}
+  .rec-sec-cnt{font-size:11px;font-weight:700;border-radius:99px;padding:1px 9px;}
+  .rec-row{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:11px 14px;margin-bottom:8px;}
+  .rec-row-top{display:flex;align-items:center;gap:10px;}
+  .rec-info{flex:1;min-width:0;}
+  .rec-title{font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rec-sub{font-size:11px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .rec-pct{font-size:15px;font-weight:800;flex-shrink:0;}
+  .rec-badge{font-size:10px;font-weight:700;border-radius:5px;padding:1px 6px;flex-shrink:0;}
+  .rec-bar{height:4px;background:var(--bar-track,#f0f0f0);border-radius:99px;overflow:hidden;margin-top:8px;}
+  .rec-bar-fill{height:100%;border-radius:99px;}
+  .rec-empty{text-align:center;padding:18px 0;color:var(--muted2);font-size:12px;}
+  .rec-note{font-size:10px;color:var(--muted2);margin:10px 2px 0;line-height:1.5;}
 
   /* Main */
   #main{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:10px 14px 0;}
@@ -492,7 +487,7 @@
     <button class="tab-btn active" id="tab-list" onclick="switchView('list')">목록</button>
     <button class="tab-btn" id="tab-dash" onclick="switchView('dash')">대시보드</button>
     <button class="tab-btn" id="tab-hist" onclick="switchView('history')">이력</button>
-    <button class="tab-btn" id="tab-todo" onclick="switchView('todo')">할일</button>
+    <button class="tab-btn" id="tab-rec" onclick="switchView('record')">기록</button>
   </div>
   <button onclick="toggleLang()" id="lang-btn" title="언어" style="
     padding:0;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);
@@ -665,7 +660,7 @@ const T={
     doneLabel:'✅ 달성완료', inProgress:'진행중', noYearLog:'이 연도에 기록이 없어요',
     deleteConfirm:'삭제할까요?', saveFail:'저장 실패',
     dday:(d)=>d>0?`D-${d}`:d===0?'오늘 마감':`D+${Math.abs(d)}`,
-    todo:'할일', todoAdd:'+ 할일 추가', todoEmpty:'오늘 할일을 추가해보세요', todoDone:'완료', todoUndone:'미완료', todoDeleteConfirm:'삭제할까요?',
+    rec:'기록',
   },
   en:{
     list:'List', dash:'Board', hist:'Log',
@@ -689,7 +684,7 @@ const T={
     doneLabel:'✅ Achieved', inProgress:'In Progress', noYearLog:'No records this year',
     deleteConfirm:'Delete this KPI?', saveFail:'Save failed',
     dday:(d)=>d>0?`D-${d}`:d===0?'Due today':`D+${Math.abs(d)}`,
-    todo:'To Do', todoAdd:'+ Add Task', todoEmpty:'Add tasks for today', todoDone:'Done', todoUndone:'Undone', todoDeleteConfirm:'Delete this task?',
+    rec:'Record',
   }
 };
 function t(key){ return (T[lang]&&T[lang][key])||T.ko[key]||key; }
@@ -708,7 +703,7 @@ function toggleLang(){
   document.getElementById('tab-list').textContent=tl.list;
   document.getElementById('tab-dash').textContent=tl.dash;
   document.getElementById('tab-hist').textContent=tl.hist;
-  document.getElementById('tab-todo').textContent=tl.todo;
+  document.getElementById('tab-rec').textContent=tl.rec;
   save();
   render();
 }
@@ -844,7 +839,7 @@ function dismissQuote(){
   if(el){el.style.opacity='0';el.style.transform='translateY(-8px)';setTimeout(()=>el.remove(),300);}
 }
 
-let goals=[], todos=[], view='list', filter='전체', sortMode='pct', theme='default';
+let goals=[], view='list', filter='전체', sortMode='pct', theme='default';
 let cardScale=100;
 let _todayCache='';
 const SCALE_STEP=5, SCALE_MIN=40, SCALE_MAX=100;
@@ -873,15 +868,10 @@ function load(){
     const raw=localStorage.getItem(STORAGE_KEY);
     if(!raw) throw new Error('empty');
     const d=JSON.parse(raw);
-    goals=d.goals||[]; todos=d.todos||[]; normalizeGoals(); cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'default'; applyTheme(theme,true);
-    // 오늘 이전 날짜 할일 자동 삭제
-    const todayStr=today();
-    const before=todos.length;
-    todos=todos.filter(td=>td.date>=todayStr);
-    if(todos.length!==before) save();
-  }catch{goals=[];todos=[];cardScale=100;lang='ko';theme='default';applyTheme('default',true);}
+    goals=d.goals||[]; normalizeGoals(); cardScale=d.scale||100; lang=d.lang||'ko'; theme=d.theme||'default'; applyTheme(theme,true);
+  }catch{goals=[];cardScale=100;lang='ko';theme='default';applyTheme('default',true);}
 }
-function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,todos,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({goals,scale:cardScale,lang,theme}));}catch(e){console.warn(T[lang].saveFail,e);}}
 
 /* ── 광고 숨김 (세션 동안만 유지, 앱 종료 시 초기화) ── */
 const AD_HIDE_KEY='ad_hide_until';
@@ -908,7 +898,7 @@ function applyAdVisibility(){
   }
 }
 function exportData(){
-  const data=JSON.stringify({goals,todos,scale:cardScale,lang,theme},null,2);
+  const data=JSON.stringify({goals,scale:cardScale,lang,theme},null,2);
   const blob=new Blob([data],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -929,13 +919,9 @@ function importData(e){
       const d=JSON.parse(ev.target.result);
       if(!Array.isArray(d.goals)) throw new Error('invalid');
       goals=d.goals;
-      if(d.todos) todos=d.todos;
       if(d.scale!=null) cardScale=d.scale;
       if(d.lang) lang=d.lang;
       if(d.theme) applyTheme(d.theme,true); else applyTheme('default',true);
-      // 복원 시에도 오늘 이전 todos 삭제
-      const todayStr=today();
-      todos=todos.filter(td=>td.date>=todayStr);
       normalizeGoals();applyLangUI();
       save();render();
       alert(lang==='ko'?`✅ ${goals.length}개 KPI 복원 완료!`:`✅ ${goals.length} KPIs restored!`);
@@ -951,11 +937,10 @@ function normalizeGoals(){
     const logs=Array.isArray(g.logs)?g.logs.filter(l=>l&&typeof l==='object'):[];
     return {...g,id:g.id||genId(),logs,current:Number(g.current)||0,target:Number(g.target)||0};
   });
-  todos=(Array.isArray(todos)?todos:[]).filter(td=>td&&td.id&&td.date);
 }
 function applyLangUI(){
   const tl=T[lang]||T.ko;
-  const m={'tab-list':tl.list,'tab-dash':tl.dash,'tab-hist':tl.hist,'tab-todo':tl.todo};
+  const m={'tab-list':tl.list,'tab-dash':tl.dash,'tab-hist':tl.hist,'tab-rec':tl.rec};
   Object.keys(m).forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=m[id];});
   const logo=document.querySelector('.logo');
   if(logo){
@@ -978,7 +963,7 @@ function render(){
     if(!main) return;
     if(view==='dash') main.innerHTML=renderDash();
     else if(view==='history') main.innerHTML=renderHistory();
-    else if(view==='todo') main.innerHTML=renderTodo();
+    else if(view==='record') main.innerHTML=renderRecord();
     else main.innerHTML=renderList();
     if(view==='list'){applyScale();initDrag();}
     if(view==='dash') drawCharts();
@@ -992,144 +977,92 @@ function render(){
 }
 
 
-function formatDateLabel(dateStr){
-  if(!dateStr||typeof dateStr!=='string'||!dateStr.includes('-')) return dateStr||'';
-  const [y,m,d]=dateStr.split('-').map(Number);
-  if(!y||!m||!d) return dateStr;
-  const dt=new Date(y,m-1,d);
-  const dayNames=lang==='ko'?['일','월','화','수','목','금','토']:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  return lang==='ko'
-    ?`${y}년 ${m}월 ${d}일 (${dayNames[dt.getDay()]})`
-    :`${dayNames[dt.getDay()]}, ${dt.toLocaleDateString('en-US',{month:'long',day:'numeric'})}`;
+/* ── 기록: 연도별 달성 / 미달성 ── */
+let recYear=null;
+function isDoneGoal(g){return Number(g.target)>0&&Number(g.current)>=Number(g.target);}
+function lastLogDate(g){
+  const ds=(g.logs||[]).map(l=>l&&l.date).filter(Boolean).sort();
+  return ds.length?ds[ds.length-1]:'';
 }
-
-function renderTodoItems(items, isHistory){
-  let h='';
-  items.forEach(td=>{
-    const kpiName=td.kpiId?goals.find(g=>g.id===td.kpiId)?.title:'';
-    const isDone=td.done;
-    const clickAttr=isHistory?'':` onclick="toggleTodo('${td.id}')"`;
-    h+=`<div class="todo-item${isDone?' done':''}"${clickAttr}>
-      <div class="todo-check"><span class="todo-check-icon">✓</span></div>
-      <div class="todo-text">${esc(td.text)}</div>
-      ${kpiName?`<span class="todo-kpi-tag">🎯 ${esc(kpiName)}</span>`:''}
-      ${!isHistory?`<span class="todo-del" onclick="event.stopPropagation();deleteTodo('${td.id}')">×</span>`:''}
-    </div>`;
-  });
-  return h;
-}
-
-function renderTodo(){
-  const todayStr=_todayCache||today();
-  // kpi 옵션 (미사용 제거)
-
-  // 날짜별 그룹핑 (최신순)
-  const dateMap={};
-  todos.forEach(td=>{
-    if(!dateMap[td.date]) dateMap[td.date]=[];
-    dateMap[td.date].push(td);
-  });
-  const sortedDates=Object.keys(dateMap).sort((a,b)=>b.localeCompare(a));
-
-  let h=`<div id="todo-main">`;
-
-  // 오늘 섹션 (상단 고정)
-  h+=`<div class="todo-date">${formatDateLabel(todayStr)}</div>`;
-  const kpiOptions=goals.length
-    ?`<option value="">${lang==='ko'?'KPI 연결 안함':'No KPI link'}</option>`+goals.map(g=>`<option value="${g.id}">${esc(g.title)}</option>`).join('')
-    :'';
-  h+=`<div class="todo-add-bar">
-    <input class="todo-input" id="todo-input" type="text" placeholder="${lang==='ko'?'오늘 할일 입력...':'Add a task for today...'}" onkeydown="if(event.key==='Enter')addTodo()">
-    <button class="todo-add-btn" onclick="addTodo()">${lang==='ko'?'추가':'Add'}</button>
-  </div>`;
-  if(goals.length){
-    h+=`<select class="todo-kpi-select" id="todo-kpi-select" style="margin-bottom:12px">${kpiOptions}</select>`;
+// 달성: 마지막 기록일 연도 / 미달성: 마감일 연도(없으면 생성 연도)
+function goalYear(g){
+  const cands=isDoneGoal(g)?[lastLogDate(g),g.createdAt,g.startAt,g.deadline]:[g.deadline,g.createdAt,g.startAt,lastLogDate(g)];
+  for(const d of cands){
+    const y=String(d||'').slice(0,4);
+    if(/^\d{4}$/.test(y)) return y;
   }
-
-
-  const todayItems=dateMap[todayStr]||[];
-  const pending=todayItems.filter(td=>!td.done);
-  const done=todayItems.filter(td=>td.done);
-
-  if(todayItems.length===0){
-    h+=`<div class="todo-empty">✏️<br>${lang==='ko'?'오늘 할일을 추가해보세요':'Add tasks for today'}</div>`;
+  return String(new Date().getFullYear());
+}
+function recRow(g,done){
+  const ko=lang==='ko';
+  const p=pctVal(g), disp=Math.min(100,p);
+  const color=getCAT_COLOR()[g.category]||'#888', bg=getCAT_BG()[g.category]||'#eee';
+  let badge='', sub=`${catDisplay(g.category)} · ${fmt(g.current)} / ${fmt(g.target)} ${esc(g.unit||'')}`;
+  if(done){
+    const ld=lastLogDate(g);
+    if(ld) sub+=` · ${ko?'달성일 ':'Done '}${ld}`;
+    badge=`<span class="rec-badge" style="background:rgba(5,150,105,0.14);color:#059669">${ko?'✓ 달성':'✓ Done'}</span>`;
   } else {
-    if(pending.length>0){
-      h+=`<div class="todo-section-label">${lang==='ko'?`미완료 ${pending.length}개`:`${pending.length} pending`}</div>`;
-      h+=renderTodoItems(pending, false);
-    }
-    if(done.length>0){
-      h+=`<div class="todo-section-label">${lang==='ko'?`완료 ${done.length}개`:`${done.length} done`}</div>`;
-      h+=renderTodoItems(done, false);
-    }
+    const expired=g.deadline&&g.deadline<today();
+    if(g.deadline) sub+=` · ${ko?'마감 ':'Due '}${g.deadline}`;
+    badge=expired
+      ?`<span class="rec-badge" style="background:rgba(220,38,38,0.12);color:#dc2626">${ko?'기한 종료':'Expired'}</span>`
+      :`<span class="rec-badge" style="background:${bg};color:${color}">${ko?'진행중':'In progress'}</span>`;
   }
-
-  // 이전 날짜 히스토리 (아래로, 접기/펼치기)
-  const pastDates=sortedDates.filter(d=>d!==todayStr);
-  if(pastDates.length>0){
-    h+=`<div style="margin-top:24px;border-top:1.5px solid var(--input-border);padding-top:16px;">`;
-    h+=`<div style="font-size:12px;font-weight:700;color:var(--muted2);margin-bottom:12px;">${lang==='ko'?'📅 이전 기록':'📅 Past Records'}</div>`;
-    pastDates.forEach(dateStr=>{
-      const items=dateMap[dateStr];
-      const pDone=items.filter(td=>td.done).length;
-      const hasUndone=items.some(td=>!td.done);
-      const collapseId=`todo-hist-${dateStr}`;
-      h+=`<div style="margin-bottom:10px;background:var(--card);border-radius:14px;box-shadow:0 1px 6px rgba(0,0,0,0.06);overflow:hidden;">`;
-      // 헤더 (탭하면 접기/펼치기)
-      h+=`<div onclick="toggleTodoHist('${collapseId}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:13px;font-weight:700;color:var(--text);">${formatDateLabel(dateStr)}</span>
-          ${hasUndone?`<span style="font-size:10px;font-weight:700;color:#f59e0b;background:rgba(245,158,11,0.15);padding:1px 6px;border-radius:20px;">${lang==='ko'?'미완료':'undone'}</span>`:''}
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:11px;color:var(--muted2);">${pDone}/${items.length} ${lang==='ko'?'완료':'done'}</span>
-          <span id="${collapseId}-arrow" style="font-size:12px;color:var(--muted2);transition:transform .2s;">▼</span>
-        </div>
-      </div>`;
-      // 내용 (기본 접힘)
-      h+=`<div id="${collapseId}" style="display:none;padding:0 14px 12px;">`;
-      h+=renderTodoItems(items, true);
-      h+=`</div>`;
-      h+=`</div>`;
-    });
-    h+=`</div>`;
+  return `<div class="rec-row">
+    <div class="rec-row-top">
+      <div class="rec-info">
+        <div class="rec-title">${esc(g.title)}</div>
+        <div class="rec-sub">${sub}</div>
+      </div>
+      ${badge}
+      <div class="rec-pct" style="color:${color}">${p}%</div>
+    </div>
+    <div class="rec-bar"><div class="rec-bar-fill" style="width:${disp}%;background:${color}"></div></div>
+  </div>`;
+}
+function renderRecord(){
+  const ko=lang==='ko';
+  if(!goals.length){
+    return `<div id="rec-main"><div class="no-history"><div style="font-size:36px;margin-bottom:10px">📂</div><div style="font-size:13px">${t('noHistory')}</div></div></div>`;
   }
+  const byYear={};
+  goals.forEach(g=>{const y=goalYear(g);(byYear[y]=byYear[y]||[]).push(g);});
+  const years=Object.keys(byYear).sort((a,b)=>Number(b)-Number(a));
+  const curY=String(new Date().getFullYear());
+  if(!recYear||!byYear[recYear]) recYear=byYear[curY]?curY:years[0];
 
-  h+=`</div>`;
-  return h;
+  let h=`<div id="year-tab-bar">`+years.map(y=>`<button class="year-chip${y===recYear?' active':''}" onclick="selectRecYear('${y}')">${y}${ko?'년':''}</button>`).join('')+`</div>`;
+  h+=`<div id="rec-main">`;
+
+  const items=byYear[recYear];
+  const achieved=items.filter(isDoneGoal).sort((a,b)=>lastLogDate(b).localeCompare(lastLogDate(a)));
+  const pending=items.filter(g=>!isDoneGoal(g)).sort((a,b)=>pctVal(b)-pctVal(a));
+  const rate=items.length?Math.round(achieved.length/items.length*100):0;
+
+  h+=`<div class="year-stats">
+    <div class="ys-card"><div class="ys-val">${items.length}${ko?'<sub>개</sub>':''}</div><div class="ys-label">${ko?'전체 목표':'Total'}</div></div>
+    <div class="ys-card"><div class="ys-val" style="color:#059669">${achieved.length}${ko?'<sub>개</sub>':''}</div><div class="ys-label">${ko?'달성':'Achieved'}</div></div>
+    <div class="ys-card"><div class="ys-val" style="color:#dc2626">${pending.length}${ko?'<sub>개</sub>':''}</div><div class="ys-label">${ko?'미달성':'Not yet'}</div></div>
+  </div>
+  <div class="section-card" style="padding:12px 16px;margin-bottom:4px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:12px;font-weight:700;color:var(--sub)">${recYear}${ko?'년 달성률':' achievement rate'}</div>
+      <div style="font-size:16px;font-weight:800;color:var(--accent)">${rate}%</div>
+    </div>
+    <div class="bar-track"><div class="bar-fill" style="width:${rate}%;background:linear-gradient(90deg,#059669,#34d399)"></div></div>
+  </div>`;
+
+  h+=`<div class="rec-sec-head"><div class="rec-sec-title">✅ ${ko?'달성':'Achieved'}</div><div class="rec-sec-cnt" style="background:rgba(5,150,105,0.14);color:#059669">${achieved.length}</div></div>`;
+  h+=achieved.length?achieved.map(g=>recRow(g,true)).join(''):`<div class="rec-empty">${ko?'달성한 목표가 없어요':'No achieved goals'}</div>`;
+
+  h+=`<div class="rec-sec-head"><div class="rec-sec-title">⏳ ${ko?'미달성':'Not yet achieved'}</div><div class="rec-sec-cnt" style="background:rgba(220,38,38,0.12);color:#dc2626">${pending.length}</div></div>`;
+  h+=pending.length?pending.map(g=>recRow(g,false)).join(''):`<div class="rec-empty">${ko?'미달성 목표가 없어요 🎉':'Nothing left 🎉'}</div>`;
+
+  h+=`<div class="rec-note">${ko?'※ 달성은 마지막 기록일, 미달성은 마감일(없으면 생성일) 기준 연도로 분류돼요.':'※ Achieved goals are grouped by last log date; others by deadline (or creation date).'}</div>`;
+  return h+`</div>`;
 }
-
-
-function toggleTodoHist(id){
-  const el=document.getElementById(id);
-  const arrow=document.getElementById(id+'-arrow');
-  if(!el) return;
-  const isOpen=el.style.display!=='none';
-  el.style.display=isOpen?'none':'block';
-  if(arrow) arrow.style.transform=isOpen?'':'rotate(180deg)';
-}
-function addTodo(){
-  const input=document.getElementById('todo-input');
-  const kpiSel=document.getElementById('todo-kpi-select');
-  const text=(input?.value||'').trim();
-  if(!text) return;
-  const kpiId=kpiSel?kpiSel.value:'';
-  todos.push({id:genId(),text,kpiId,done:false,date:today()});
-  save();render();
-}
-
-function toggleTodo(id){
-  const td=todos.find(item=>item.id===id);
-  if(!td) return;
-  td.done=!td.done;
-  td.doneAt=td.done?new Date().toISOString():null;
-  save();render();
-}
-
-function deleteTodo(id){
-  confirmModal(lang==='ko'?'할일을 삭제할까요?':'Delete this task?',()=>{todos=todos.filter(item=>item.id!==id);save();render();});
-}
-
+function selectRecYear(y){recYear=y;render();}
 
 function applyTheme(t,skipSaveRender=false){
   theme=t;
@@ -1167,7 +1100,7 @@ function captureScreen(){
     alert(lang==='ko'?'캡처 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.':'Capture library is loading. Please try again shortly.');
     return;
   }
-  const viewNames={list:'목록',dash:'대시보드',history:'이력',todo:'할일'};
+  const viewNames={list:'목록',dash:'대시보드',history:'이력',record:'기록'};
   const btn=document.getElementById('btn-capture');
   if(btn) btn.style.opacity='0';
   const captureBg={dark:'#0d1117',midnight:'#0f0b1e',peach:'#fff0f0',forest:'#f0f7f0',ocean:'#e8f4f8',sunshine:'#fffde7',military:'#1e2118',stone:'#f0efed',cloud:'#eef2f6'};
@@ -1219,7 +1152,7 @@ function captureScreen(){
     }
 
     // 스크롤 컨테이너 여백 제거
-    el.querySelectorAll('#dash-main,#card-list,#history-main,#todo-main').forEach(e=>
+    el.querySelectorAll('#dash-main,#card-list,#history-main,#rec-main').forEach(e=>
       applyOverride(e,{overflow:'visible',height:'auto',maxHeight:'none',paddingBottom:'0'})
     );
     applyOverride(el,{overflow:'visible',height:'auto',paddingBottom:'0',...extraStyles});
@@ -1228,7 +1161,7 @@ function captureScreen(){
     const elRectForH=el.getBoundingClientRect();
     let contentBottom=0;
     // 내부 스크롤 컨테이너 자식 먼저
-    el.querySelectorAll('#dash-main>*,#card-list>*,#history-main>*,#todo-main>*').forEach(child=>{
+    el.querySelectorAll('#dash-main>*,#card-list>*,#history-main>*,#rec-main>*').forEach(child=>{
       const b=child.getBoundingClientRect().bottom - elRectForH.top;
       if(b>contentBottom) contentBottom=b;
     });
@@ -1352,7 +1285,7 @@ function closeShareSheet(){
 }
 function switchView(v){
   view=v;
-  const map={list:'tab-list',dash:'tab-dash',history:'tab-hist',todo:'tab-todo'};
+  const map={list:'tab-list',dash:'tab-dash',history:'tab-hist',record:'tab-rec'};
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   const activeBtn=document.getElementById(map[v]);
   if(activeBtn) activeBtn.classList.add('active');
@@ -2068,7 +2001,7 @@ function closeModal(){document.getElementById('modal-ov')?.remove();}
 
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js?20261015080000').then(reg=>{
+    navigator.serviceWorker.register('/sw.js?20261029223700').then(reg=>{
       console.log('[App] SW registered');
       if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
       reg.addEventListener('updatefound',()=>{
@@ -2090,11 +2023,11 @@ const _tl=T[lang];
 const _tli=document.getElementById('tab-list');
 const _tdi=document.getElementById('tab-dash');
 const _thi=document.getElementById('tab-hist');
-const _tti=document.getElementById('tab-todo');
+const _tti=document.getElementById('tab-rec');
 if(_tli) _tli.textContent=_tl.list;
 if(_tdi) _tdi.textContent=_tl.dash;
 if(_thi) _thi.textContent=_tl.hist;
-if(_tti) _tti.textContent=_tl.todo;
+if(_tti) _tti.textContent=_tl.rec;
 // 초기 로드 시 언어에 따라 로고 스타일 적용
 (function(){
   const logo=document.querySelector('.logo');
